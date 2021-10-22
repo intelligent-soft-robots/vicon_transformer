@@ -41,7 +41,7 @@ class ViconJson:
     # connecting and reading frames
 
     def read_vicon_json_from_zmq(self):
-        if self.zmq_connected is False:
+        if not self.zmq_connected:
             print('read_vicon_json_from_zmq: connect before reading')
             return []
         else: # read 
