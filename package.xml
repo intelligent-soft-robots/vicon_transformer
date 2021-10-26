@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<?xml-model
+   href="http://download.ros.org/schema/package_format3.xsd"
+   schematypens="http://www.w3.org/2001/XMLSchema"?>
+
+<package format="3">
+  <name>vicon_transformer</name>
+  <version>1.0.0</version>
+  <description>uses vicon to find transforms of table and robot</description>
+  <author email="dbuechler@tuebingen.mpg.de">Dieter Buechler</author>
+  <maintainer email="dbuechler@tuebingen.mpg.de">Dieter Buechler</maintainer>
+  <license>BSD 3-Clause</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+    <build_type>ament_cmake_python</build_type>
+  </export>
+
+</package>
