@@ -203,6 +203,7 @@ class ViconJson:
     def get_transl(self,key):
         idx = self.json_obj['subjectNames'].index(key)
         tr =  np.asarray(self.json_obj['subject_'+str(idx)]['global_translation'][0]).reshape(3,1)
+        tr = 1e-3*tr
         return self.rot_origin_vicon @ tr + self.tr_origin_vicon
 
     def get_rot_mat(self,key):
