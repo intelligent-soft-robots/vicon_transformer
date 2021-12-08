@@ -18,7 +18,10 @@ def testOriginInit():
 
     for key in  vT1.json_obj['subjectNames']:
         diff = vT1.get_transl(key=key).T-vT2.get_transl(key=key).T
-        print(diff)
+        diff2 = vT1.get_rot_mat(key=key).T-vT2.get_rot_mat(key=key).T
+        print('position error', np.linalg.norm(diff))
+        print('rotation error\n', diff2)
+        print()
 
 
 if __name__ == "__main__":
