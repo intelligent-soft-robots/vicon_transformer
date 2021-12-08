@@ -27,6 +27,8 @@ class ViconJson:
         self.ip = ip
         self.port = port
         self.timeout_in_ms = timeout_in_ms
+        self.tr_origin_vicon = np.zeros((3,1))
+        self.rot_origin_vicon = np.eye(3)
         # try connecting to zmq
         self.zmq_connect(self.ip,self.port,self.timeout_in_ms)
         # read frame from file when connection cannot be established
@@ -36,7 +38,17 @@ class ViconJson:
         else:
             self.json_obj = self.read_vicon_json_from_file(self.get_config_dir()+'/'+fname)
             print('Vicon initialised via test frame from file')
-    
+        self._init_origin()
+
+    # init origin
+
+    def _init_origin(self):
+        originKey = 'rll_ping_base'
+        tr_vicon_orig = self.get_transl(originKey)
+        rot_vicon_orig  = self.get_rot_mat(originKey)
+        self.rot_origin_vicon = rot_vicon_orig.T
+        self.tr_origin_vicon = -rot_vicon_orig.T.dot(tr_vicon_orig)
+
     # connecting and reading frames
 
     def read_vicon_json_from_zmq(self):
@@ -93,7 +105,7 @@ class ViconJson:
         return r
 
     def get_config_dir(self):
-        return os.path.dirname(__file__)
+        return abspath(join(dirname(__file__), '..', '..', 'config'))
 
     # measure distances
 
@@ -190,13 +202,13 @@ class ViconJson:
 
     def get_transl(self,key):
         idx = self.json_obj['subjectNames'].index(key)
-        tr =  self.json_obj['subject_'+str(idx)]['global_translation'][0]
-        return tr
+        tr =  np.asarray(self.json_obj['subject_'+str(idx)]['global_translation'][0]).reshape(3,1)
+        return self.rot_origin_vicon @ tr + self.tr_origin_vicon
 
     def get_rot_mat(self,key):
         idx = self.json_obj['subjectNames'].index(key)
-        r =  self.json_obj['subject_'+str(idx)]['global_rotation']["matrix"][0]
-        return r
+        r =  np.asarray(self.json_obj['subject_'+str(idx)]['global_rotation']["matrix"][0])
+        return self.rot_origin_vicon @ r
 
     def get_rot_eulerxyz(self,key):
         idx = self.json_obj['subjectNames'].index(key)
