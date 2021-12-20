@@ -35,8 +35,6 @@ class ViconJson:
         self.ip = ip
         self.port = port
         self.timeout_in_ms = timeout_in_ms
-        self.tr_origin_vicon = np.zeros((3,1))
-        self.rot_origin_vicon = np.eye(3)
         self.T_origin_vicon = np.eye(4)
         # try connecting to zmq
         self.zmq_connect(self.ip,self.port,self.timeout_in_ms)
