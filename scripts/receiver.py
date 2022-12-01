@@ -1,41 +1,61 @@
-from __future__ import print_function
-
-import sys
-import zmq
+#!/usr/bin/env python3
+import argparse
 import json
+import logging
 import signal
+import sys
+
+import zmq  # type: ignore
 
 
 # handle ctrl+c to disconnect
 def signal_handler(sig, frame):
     print("You pressed Ctrl+C! -> closing ")
-    context.destroy()
     sys.exit(0)
 
 
-signal.signal(signal.SIGINT, signal_handler)
+def main():
+    logging.basicConfig(level=logging.INFO)
 
-print("connecting...")
-context = zmq.Context()
-sub = context.socket(zmq.SUB)
-sub.setsockopt(zmq.SUBSCRIBE, b"")
-sub.RCVTIMEO = 5000  # wait only 5s for new message
-sub.connect("tcp://10.42.2.29:5555")  # Note
-print("connected")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "address",
+        type=str,
+        nargs="?",
+        default="tcp://10.42.2.29:5555",
+        help="Address to connect the zmq socket to.  Default: %(default)s.",
+    )
+    args = parser.parse_args()
 
-print("receiving")
-while True:
-    j = sub.recv_json()
-    if j["frame_number"] % 150 == 0:
-        print(
-            str(j["frame_number"])
-            + " \\ "
-            + str(j["my_frame_number"])
-            + " on since "
-            + str(j["on_time"])
-            + " with time stamp"
-            + str(j["time_stamp"])
-        )
-        # print('closed: ' + str(sub.closed))
-        print(str(j["subject_2"]["global_translation"]))
-    print(json.dumps(j, indent=4, sort_keys=True))
+    signal.signal(signal.SIGINT, signal_handler)
+
+    logging.info("connecting to %s...", args.address)
+    with zmq.Context() as context:
+        sub = context.socket(zmq.SUB)
+        sub.setsockopt(zmq.SUBSCRIBE, b"")
+        sub.RCVTIMEO = 5000  # wait only 5s for new message
+        sub.connect(args.address)  # Note
+        logging.info("connected")
+
+        logging.info("start receiving")
+        while True:
+            j = sub.recv_json()
+            if j["frame_number"] % 150 == 0:
+                logging.info(
+                    str(j["frame_number"])
+                    + " \\ "
+                    + str(j["my_frame_number"])
+                    + " on since "
+                    + str(j["on_time"])
+                    + " with time stamp"
+                    + str(j["time_stamp"])
+                )
+                # print('closed: ' + str(sub.closed))
+                print(str(j["subject_2"]["global_translation"]))
+            print(json.dumps(j, indent=4, sort_keys=True))
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
