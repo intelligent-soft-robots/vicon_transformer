@@ -1,17 +1,25 @@
-import json 
-import os
-from numpy.core.fromnumeric import transpose
-import pytransform3d as tr
+import json
 import numpy as np
 from os.path import dirname, abspath, join
 import zmq
 
-# object names 
-# ['frame_number', 'frame_rate', 'latency', 'my_frame_number', 'num_subjects', 
-# 'on_time', 'subjectNames', 'subject_0', 'subject_1', 'subject_2', 'subject_3', 
-# 'subject_4', 'subject_5', 'subject_6', 'subject_7', 'subject_8', 'subject_9', 
+# object names
+# ['frame_number', 'frame_rate', 'latency', 'my_frame_number', 'num_subjects',
+# 'on_time', 'subjectNames', 'subject_0', 'subject_1', 'subject_2', 'subject_3',
+# 'subject_4', 'subject_5', 'subject_6', 'subject_7', 'subject_8', 'subject_9',
 # 'time_stamp']
 
+def T(R, p):
+    tmp = np.eye(4)
+    tmp[:3,:3] = np.array(R).reshape(3,3)
+    tmp[:3,3:4] = np.array(p).reshape(3,1)
+    return tmp
+
+def inv_T(T):
+    invT = T.copy()
+    invT[:3,:3] = T[:3,:3].T
+    invT[:3,3:4] = -invT[:3,:3].dot(T[:3,3:4])
+    return invT
 
 class ViconJson:
     def __init__(
@@ -27,6 +35,7 @@ class ViconJson:
         self.ip = ip
         self.port = port
         self.timeout_in_ms = timeout_in_ms
+        self.T_origin_vicon = np.eye(4)
         # try connecting to zmq
         self.zmq_connect(self.ip,self.port,self.timeout_in_ms)
         # read frame from file when connection cannot be established
@@ -36,26 +45,33 @@ class ViconJson:
         else:
             self.json_obj = self.read_vicon_json_from_file(self.get_config_dir()+'/'+fname)
             print('Vicon initialised via test frame from file')
-    
+        self._init_origin()
+
+    # init origin
+
+    def _init_origin(self):
+        originKey = 'rll_ping_base'
+        self.T_origin_vicon = inv_T(self.get_T(originKey))
+
     # connecting and reading frames
 
     def read_vicon_json_from_zmq(self):
         if not self.zmq_connected:
             print('read_vicon_json_from_zmq: connect before reading')
             return []
-        else: # read 
+        else: # read
             self.json_obj = self.sub.recv_json()
             return self.json_obj
-        
+
     def zmq_connect(self,ip,port,timeout):
         print('zmq_connect: connecting...')
         try:
             self.context = zmq.Context()
             self.sub=self.context.socket(zmq.SUB)
             self.sub.setsockopt(zmq.SUBSCRIBE, b"")
-            self.sub.RCVTIMEO = self.timeout_in_ms # wait 5s for new message 
+            self.sub.RCVTIMEO = self.timeout_in_ms # wait 5s for new message
             msg  = 'tcp://'+str(self.ip)+':'+str(port)
-            self.sub.connect(msg)  
+            self.sub.connect(msg)
             if self.sub.closed is True:
                 print('zmq_connect(): could not connect')
                 return
@@ -74,7 +90,7 @@ class ViconJson:
         except Exception as e:
             print('zmq_connect(): could not connect')
             return
-        
+
     def zmq_disconnect(self):
         print('zmq_disconnect: disconnecting...')
         if self.zmq_connected:
@@ -93,36 +109,31 @@ class ViconJson:
         return r
 
     def get_config_dir(self):
-        return os.path.dirname(__file__)
+        return abspath(join(dirname(__file__), '..', '..', 'config'))
 
     # measure distances
 
     def print_distances(self):
         print('table lengths')
-        t_pos_1=self.get_table1_trans()
-        t_pos_2=self.get_table2_trans()
-        t_pos_3=self.get_table3_trans()
-        t_pos_4=self.get_table4_trans()
+        t_pos_1=self.get_table1_T()[:3,-1]
+        t_pos_2=self.get_table2_T()[:3,-1]
+        t_pos_3=self.get_table3_T()[:3,-1]
+        t_pos_4=self.get_table4_T()[:3,-1]
         print('1->4 ',np.linalg.norm(t_pos_1-t_pos_4))
         print('2->3 ',np.linalg.norm(t_pos_2-t_pos_3))
         print('1->2 ',np.linalg.norm(t_pos_1-t_pos_2))
         print('4->3 ',np.linalg.norm(t_pos_4-t_pos_3))
 
         print('distance origin -> robot vicon marker')
-        t_rob_origin = self.get_rel_transl('rll_ping_base','rll_muscle_base')
+        t_rob_origin = self.get_robot_base_T()[:3,-1]
         print(t_rob_origin)
 
 
     # get object rotations and translations
 
-    def get_table_rot(self):
-        t_rot_mat = self.get_table_rot1()
-        t_rot_xy_ = np.concatenate((t_rot_mat[0,:].T,t_rot_mat[1,:].T),axis=0)
-        print('table rot ',t_rot_mat)
-        return np.squeeze(np.asarray(t_rot_xy_))
-
     def get_robot_rot(self):
-        r_rot_mat = self.get_robot_base_rot()
+        # TODO
+        r_rot_mat = self.get_robot_base_T()[:3,:3]
         # rotate robot base vicon frame to robot shoulder frame
         # 1) z axis 180 deg by flipping x & y
         r_tmp = r_rot_mat[1,:].copy()
@@ -135,10 +146,12 @@ class ViconJson:
         r_rot_xy_ = np.concatenate((r_rot_mat[0,:].T,r_rot_mat[1,:].T),axis=0)
         return np.squeeze(np.asarray(r_rot_xy_))
 
-    def get_robot_shoulder_pos(self):
-        r_pos=self.get_robot_base_trans()
-        tr_to_shoulder = np.asarray([-.255,.0785,0]) # measured on real robot
-        return r_pos+tr_to_shoulder
+    def get_robot_shoulder_T(self):
+        # TODO: Orientation is left the same with the base orientation
+        #       shoulder is located at [-.255,.0785,0] in base frame
+        T_base_shoulder = np.eye(4);  T_base_shoulder[:3,-1] = np.asarray([-.255,.0785,0]) # measured on real robot
+        T_orig_base = self.get_robot_base_T()
+        return T_orig_base @ T_base_shoulder
 
     def get_table_pos(self):
         t_pos_1=self.get_table1_trans()
@@ -148,62 +161,23 @@ class ViconJson:
         t = (t_pos_1+t_pos_2+t_pos_3+t_pos_4)/4
         return t
 
-    # translations
+    # Transformations
+    def get_robot_base_T(self):
+        return self.get_T('rll_muscle_base')
 
-    def get_rel_transl(self,key_origin,key_target):
-        T_origin = self.get_transl(key_origin)
-        T_target = self.get_transl(key_target)
-        return ( np.asarray(T_target)-np.asarray(T_origin) )/1000
-
-    def get_robot_base_trans(self):
-        return self.get_rel_transl('rll_ping_base','rll_muscle_base')
-
-    def get_table1_trans(self):
-        return self.get_rel_transl('rll_ping_base','TT Platte_Eckteil 1')
-    def get_table2_trans(self):
-        return self.get_rel_transl('rll_ping_base','TT Platte_Eckteil 2')
-    def get_table3_trans(self):
-        return self.get_rel_transl('rll_ping_base','TT Platte_Eckteil 3')
-    def get_table4_trans(self):
-        return self.get_rel_transl('rll_ping_base','TT Platte_Eckteil 4')
-
-    # rotations
-
-    def get_rel_rot_mat(self,key_origin,key_target):
-        R_mat_origin = self.get_rot_mat(key_origin)
-        R_mat_target = self.get_rot_mat(key_target)
-        return np.asarray(R_mat_target).T @ np.asarray(R_mat_origin)
-
-    def get_robot_base_rot(self):
-        return self.get_rel_rot_mat('rll_ping_base','rll_muscle_base')
-
-    def get_table_rot1(self):
-        return self.get_rel_rot_mat('rll_ping_base','TT Platte_Eckteil 1')
-    def get_table_rot2(self):
-        return self.get_rel_rot_mat('rll_ping_base','TT Platte_Eckteil 2')
-    def get_table_rot3(self):
-        return self.get_rel_rot_mat('rll_ping_base','TT Platte_Eckteil 3')
-    def get_table_rot4(self):
-        return self.get_rel_rot_mat('rll_ping_base','TT Platte_Eckteil 4')
+    def get_table1_T(self):
+        return self.get_T('TT Platte_Eckteil 1')
+    def get_table2_T(self):
+        return self.get_T('TT Platte_Eckteil 2')
+    def get_table3_T(self):
+        return self.get_T('TT Platte_Eckteil 3')
+    def get_table4_T(self):
+        return self.get_T('TT Platte_Eckteil 4')
 
     # access json methods
-
-    def get_transl(self,key):
+    def get_T(self, key):
+        # Returns homogenous transformation in origin frame
         idx = self.json_obj['subjectNames'].index(key)
-        tr =  self.json_obj['subject_'+str(idx)]['global_translation'][0]
-        return tr
-
-    def get_rot_mat(self,key):
-        idx = self.json_obj['subjectNames'].index(key)
-        r =  self.json_obj['subject_'+str(idx)]['global_rotation']["matrix"][0]
-        return r
-
-    def get_rot_eulerxyz(self,key):
-        idx = self.json_obj['subjectNames'].index(key)
-        r =  self.json_obj['subject_'+str(idx)]['global_rotation']["eulerxyz"][0]
-        return r
-
-    def get_rot_quat(self,key):
-        idx = self.json_obj['subjectNames'].index(key)
-        r =  self.json_obj['subject_'+str(idx)]['global_rotation']["quaternion"][0]
-        return r    
+        tr = 1e-3 * np.asarray(self.json_obj['subject_'+str(idx)]['global_translation'][0]).reshape(3,1)
+        R = np.asarray(self.json_obj['subject_'+str(idx)]['global_rotation']["matrix"][0])
+        return self.T_origin_vicon @ T(R, tr)
