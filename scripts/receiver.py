@@ -1,12 +1,10 @@
 from __future__ import print_function
 
-from os.path import dirname, abspath, join
 import sys
 import zmq
 import json
-import time
 import signal
-import sys
+
 
 # handle ctrl+c to disconnect
 def signal_handler(sig, frame):
@@ -31,7 +29,7 @@ while True:
     if j["frame_number"] % 150 == 0:
         print(
             str(j["frame_number"])
-            + " \ "
+            + " \\ "
             + str(j["my_frame_number"])
             + " on since "
             + str(j["on_time"])
