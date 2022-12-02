@@ -1,3 +1,37 @@
+[build-system]
+requires = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "vicon_transformer"
+version = "1.0.0"
+description = "Read frames provided by a Vicon system and transform into usable form for ISR projects"
+authors = [
+    {name = "Dieter Büchler"},
+    {name = "Felix Widmaier"},
+]
+maintainers = [
+    {name = "Dieter Büchler", email = "dbuechler@tuebingen.mpg.de"},
+    {name = "Felix Widmaier", email = "felix.widmaier@tuebingen.mpg.de"},
+]
+readme = "README.md"
+
+requires-python = ">=3.6"
+dependencies = [
+    "numpy",
+    "zmq",
+]
+
+[project.urls]
+"Source Code" = "https://github.com/intelligent-soft-robots/vicon_transformer"
+"Bug Tracker" = "https://github.com/intelligent-soft-robots/vicon_transformer/issues"
+
+
+[tool.setuptools]
+packages = ["vicon_transformer"]
+
+
 [[tool.mypy.overrides]]
 module = [
     "zmq",
