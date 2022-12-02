@@ -2,7 +2,9 @@ import json
 import logging
 
 import numpy as np
-import zmq
+
+from .receiver import ZmqJsonReceiver
+from .errors import ConnectionFailedError
 
 # object names
 # ['frame_number', 'frame_rate', 'latency', 'my_frame_number', 'num_subjects',
@@ -34,21 +36,16 @@ class ViconJson:
         timeout_in_ms=5000,
     ):
         self.log = logging.getLogger(__name__)
-
-        self.zmq_connected = False
-        self.sub = None
-        self.context = None
-        self.ip = ip
-        self.port = port
-        self.timeout_in_ms = timeout_in_ms
         self.T_origin_vicon = np.eye(4)
-        # try connecting to zmq
-        self.zmq_connect(self.ip, self.port, self.timeout_in_ms)
-        # read frame from file when connection cannot be established
-        if self.zmq_connected:
+        self.receiver = ZmqJsonReceiver(f"tcp://{ip}:{port}", timeout_in_ms)
+
+        try:
+            self.receiver.connect()
             self.json_obj = self.read_vicon_json_from_zmq()
             self.log.info("Vicon connected via zmq")
-        else:
+        except ConnectionFailedError:
+            self.log.error("Connection failed.")
+
             self.json_obj = self.read_vicon_json_from_file(fname)
             self.log.info("Vicon initialised via test frame from file")
         self._init_origin()
@@ -62,57 +59,8 @@ class ViconJson:
     # connecting and reading frames
 
     def read_vicon_json_from_zmq(self):
-        if not self.zmq_connected:
-            self.log.error("read_vicon_json_from_zmq: connect before reading")
-            return []
-        else:  # read
-            self.json_obj = self.sub.recv_json()
-            return self.json_obj
-
-    def zmq_connect(self, ip, port, timeout):
-        self.log.debug("zmq_connect: connecting...")
-        try:
-            self.context = zmq.Context()
-            self.sub = self.context.socket(zmq.SUB)
-            self.sub.setsockopt(zmq.SUBSCRIBE, b"")
-            self.sub.RCVTIMEO = self.timeout_in_ms  # wait 5s for new message
-
-            address = f"tcp://{self.ip}:{self.port}"
-            self.log.info("Connect to %s", address)
-            self.sub.connect(address)
-
-            if self.sub.closed is True:
-                self.log.error("zmq_connect(): could not connect")
-                return
-
-            # test read frame until frame available or timeout
-            n = 0
-            while n < 10 or not self.zmq_connected:
-                self.json_obj = self.sub.recv_json()
-                if self.json_obj != []:
-                    self.zmq_connected = True
-                n = n + 1
-            if self.zmq_connected:
-                self.log.debug("zmq_connect(): connected")
-            else:
-                self.log.error("zmq_connect(): could not read a frame")
-                self.zmq_disconnect()
-
-        except Exception as e:
-            self.log.error(f"zmq_connect(): could not connect: {e}")
-            return
-
-    def zmq_disconnect(self):
-        self.log.debug("zmq_disconnect: disconnecting...")
-        if self.zmq_connected:
-            self.context.destroy()
-            if self.sub.closed is True:
-                self.zmq_connected = False
-                self.log.info("zmq_disconnect: disconnected. Bye...")
-            else:
-                self.log.error("zmq_disconnect: disconnecting failed!")
-        else:
-            self.log.info("zmq_disconnect: already disconnected. Bye...")
+        self.json_obj = self.receiver.read()
+        return self.json_obj
 
     def read_vicon_json_from_file(self, fname):
         with open(fname) as json_file:
