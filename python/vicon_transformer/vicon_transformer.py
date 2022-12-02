@@ -1,5 +1,7 @@
 import json
+import logging
 import os.path
+
 import numpy as np
 import zmq
 
@@ -32,6 +34,8 @@ class ViconJson:
         port="5555",
         timeout_in_ms=5000,
     ):
+        self.log = logging.getLogger(__name__)
+
         self.zmq_connected = False
         self.sub = None
         self.context = None
@@ -44,12 +48,12 @@ class ViconJson:
         # read frame from file when connection cannot be established
         if self.zmq_connected:
             self.json_obj = self.read_vicon_json_from_zmq()
-            print("Vicon connected via zmq")
+            self.log.info("Vicon connected via zmq")
         else:
             self.json_obj = self.read_vicon_json_from_file(
                 self.get_config_dir() + "/" + fname
             )
-            print("Vicon initialised via test frame from file")
+            self.log.info("Vicon initialised via test frame from file")
         self._init_origin()
 
     # init origin
@@ -62,24 +66,28 @@ class ViconJson:
 
     def read_vicon_json_from_zmq(self):
         if not self.zmq_connected:
-            print("read_vicon_json_from_zmq: connect before reading")
+            self.log.error("read_vicon_json_from_zmq: connect before reading")
             return []
         else:  # read
             self.json_obj = self.sub.recv_json()
             return self.json_obj
 
     def zmq_connect(self, ip, port, timeout):
-        print("zmq_connect: connecting...")
+        self.log.debug("zmq_connect: connecting...")
         try:
             self.context = zmq.Context()
             self.sub = self.context.socket(zmq.SUB)
             self.sub.setsockopt(zmq.SUBSCRIBE, b"")
             self.sub.RCVTIMEO = self.timeout_in_ms  # wait 5s for new message
-            msg = "tcp://" + str(self.ip) + ":" + str(port)
-            self.sub.connect(msg)
+
+            address = f"tcp://{self.ip}:{self.port}"
+            self.log.info("Connect to %s", address)
+            self.sub.connect(address)
+
             if self.sub.closed is True:
-                print("zmq_connect(): could not connect")
+                self.log.error("zmq_connect(): could not connect")
                 return
+
             # test read frame until frame available or timeout
             n = 0
             while n < 10 or not self.zmq_connected:
@@ -88,25 +96,26 @@ class ViconJson:
                     self.zmq_connected = True
                 n = n + 1
             if self.zmq_connected:
-                print("zmq_connect(): connected")
+                self.log.debug("zmq_connect(): connected")
             else:
-                print("zmq_connect(): could not read a frame")
+                self.log.error("zmq_connect(): could not read a frame")
                 self.zmq_disconnect()
+
         except Exception as e:
-            print(f"zmq_connect(): could not connect: {e}")
+            self.log.error(f"zmq_connect(): could not connect: {e}")
             return
 
     def zmq_disconnect(self):
-        print("zmq_disconnect: disconnecting...")
+        self.log.debug("zmq_disconnect: disconnecting...")
         if self.zmq_connected:
             self.context.destroy()
             if self.sub.closed is True:
                 self.zmq_connected = False
-                print("zmq_disconnect: disconnected. Bye...")
+                self.log.info("zmq_disconnect: disconnected. Bye...")
             else:
-                print("zmq_disconnect: disconnecting failed!")
+                self.log.error("zmq_disconnect: disconnecting failed!")
         else:
-            print("zmq_disconnect: already disconnected. Bye...")
+            self.log.info("zmq_disconnect: already disconnected. Bye...")
 
     def read_vicon_json_from_file(self, fname):
         with open(fname) as json_file:
@@ -121,11 +130,12 @@ class ViconJson:
     # measure distances
 
     def print_distances(self):
-        print("table lengths")
         t_pos_1 = self.get_table1_T()[:3, -1]
         t_pos_2 = self.get_table2_T()[:3, -1]
         t_pos_3 = self.get_table3_T()[:3, -1]
         t_pos_4 = self.get_table4_T()[:3, -1]
+
+        print("table lengths")
         print("1->4 ", np.linalg.norm(t_pos_1 - t_pos_4))
         print("2->3 ", np.linalg.norm(t_pos_2 - t_pos_3))
         print("1->2 ", np.linalg.norm(t_pos_1 - t_pos_2))
@@ -150,6 +160,7 @@ class ViconJson:
         r_rot_mat = r_rot_mat @ rot_90z
         # bring into xy_axes form
         r_rot_xy_ = np.concatenate((r_rot_mat[0, :].T, r_rot_mat[1, :].T), axis=0)
+
         return np.squeeze(np.asarray(r_rot_xy_))
 
     def get_robot_shoulder_T(self):
@@ -168,6 +179,7 @@ class ViconJson:
         t_pos_3 = self.get_table3_trans()
         t_pos_4 = self.get_table4_trans()
         t = (t_pos_1 + t_pos_2 + t_pos_3 + t_pos_4) / 4
+
         return t
 
     # Transformations
