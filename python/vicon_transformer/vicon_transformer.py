@@ -1,6 +1,6 @@
 import json
+import os.path
 import numpy as np
-from os.path import dirname, abspath, join
 import zmq
 
 # object names
@@ -27,7 +27,7 @@ def inv_T(T):
 class ViconJson:
     def __init__(
         self,
-        fname="testViconFrameTableRot.json",  #'testViconFrame.txt'
+        fname="testViconFrameTableRot.json",  # 'testViconFrame.txt'
         ip="10.42.2.29",
         port="5555",
         timeout_in_ms=5000,
@@ -93,7 +93,7 @@ class ViconJson:
                 print("zmq_connect(): could not read a frame")
                 self.zmq_disconnect()
         except Exception as e:
-            print("zmq_connect(): could not connect")
+            print(f"zmq_connect(): could not connect: {e}")
             return
 
     def zmq_disconnect(self):
@@ -114,7 +114,9 @@ class ViconJson:
         return r
 
     def get_config_dir(self):
-        return abspath(join(dirname(__file__), "..", "..", "config"))
+        return os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "..", "..", "config")
+        )
 
     # measure distances
 
