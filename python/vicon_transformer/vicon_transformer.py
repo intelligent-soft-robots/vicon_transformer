@@ -1,5 +1,5 @@
 import json
-import os
+import os.path
 import numpy as np
 import zmq
 
@@ -114,7 +114,9 @@ class ViconJson:
         return r
 
     def get_config_dir(self):
-        return abspath(join(dirname(__file__), "..", "..", "config"))
+        return os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "..", "..", "config")
+        )
 
     # measure distances
 

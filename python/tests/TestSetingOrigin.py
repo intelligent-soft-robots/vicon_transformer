@@ -10,7 +10,7 @@ THIS_DIR = dirname(__file__)
 CODE_DIR = abspath(join(THIS_DIR, "..", "vicon_transformer"))
 sys.path.append(CODE_DIR)
 
-from vicon_transformer import ViconJson
+from vicon_transformer import ViconJson  # noqa
 
 
 def testOriginInit():
