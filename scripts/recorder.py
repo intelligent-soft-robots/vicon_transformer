@@ -10,11 +10,12 @@ import time
 import typing
 
 import tqdm
-import zmq  # type: ignore
+
+from vicon_transformer import ZmqJsonReceiver
 
 
 class DurationEnd(Exception):
-    ...
+    pass
 
 
 class ZmqRecorder:
@@ -32,13 +33,6 @@ class ZmqRecorder:
 
         signal.signal(signal.SIGINT, self._signal_handler)
 
-        logging.info("Connect to %s", address)
-        context = zmq.Context()
-        sub = context.socket(zmq.SUB)
-        sub.setsockopt(zmq.SUBSCRIBE, b"")
-        sub.RCVTIMEO = 5000  # wait only 5s for new message
-        sub.connect(address)
-
         if duration:
             print("Start recording for %.0f seconds." % duration)
         else:
@@ -47,9 +41,9 @@ class ZmqRecorder:
         t_start = time.time()
         data = []
         try:
-            with tqdm.tqdm() as progress:
+            with ZmqJsonReceiver(address) as receiver, tqdm.tqdm() as progress:
                 while not self.stop_requested:
-                    j = sub.recv_json()
+                    j = receiver.read()
                     data.append(j)
                     progress.update()
 
@@ -62,8 +56,6 @@ class ZmqRecorder:
         except Exception as e:
             logging.error("Error [%s]: %s", type(e), e)
             logging.info("Stop recording.")
-
-        context.destroy()
 
         record_duration_s = (data[-1]["time_stamp"] - data[0]["time_stamp"]) / 1e9
         logging.info(
