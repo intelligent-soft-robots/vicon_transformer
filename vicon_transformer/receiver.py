@@ -40,7 +40,10 @@ class ZmqJsonReceiver:
             timeout_ms:  For how long to wait when no message is received.
                 In milliseconds.
         """
-        self._log = logging.getLogger(__name__)
+        logger = logging.getLogger(__name__)
+        self._log = logging.LoggerAdapter(
+            logger, {"className": self.__class__.__name__, "address": address}
+        )
 
         # type declarations
         self._socket: zmq.Socket
