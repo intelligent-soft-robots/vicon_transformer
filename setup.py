@@ -1,4 +1,4 @@
-# Dummy setup.py needed for colon
+# Dummy setup.py needed for colcon
 import setuptools
 
 if __name__ == "__main__":
