@@ -40,18 +40,18 @@ class ZmqJsonReceiver:
             timeout_ms:  For how long to wait when no message is received.
                 In milliseconds.
         """
-        self.log = logging.getLogger(__name__)
+        self._log = logging.getLogger(__name__)
 
         # type declarations
-        self.socket: zmq.Socket
-        self.context: zmq.Context
+        self._socket: zmq.Socket
+        self._context: zmq.Context
 
-        self.is_connected = False
-        self.address = address
-        self.timeout_ms = timeout_ms
+        self._is_connected = False
+        self._address = address
+        self._timeout_ms = timeout_ms
 
     def __del__(self) -> None:
-        if self.is_connected:
+        if self._is_connected:
             self.close()
 
     def __enter__(self) -> ZmqJsonReceiver:
@@ -68,33 +68,33 @@ class ZmqJsonReceiver:
             ConnectionFailedError:  If connection cannot be established.
         """
         try:
-            self.context = zmq.Context()
-            self.socket = self.context.socket(zmq.SUB)
-            self.socket.setsockopt(zmq.SUBSCRIBE, b"")
-            self.socket.RCVTIMEO = self.timeout_ms
+            self._context = zmq.Context()
+            self._socket = self._context.socket(zmq.SUB)
+            self._socket.setsockopt(zmq.SUBSCRIBE, b"")
+            self._socket.RCVTIMEO = self._timeout_ms
 
-            self.log.info("Connect to %s", self.address)
-            self.socket.connect(self.address)
+            self._log.info("Connect to %s", self._address)
+            self._socket.connect(self._address)
 
-            if self.socket.closed is True:
+            if self._socket.closed is True:
                 raise ConnectionFailedError()
 
-            self.is_connected = True
+            self._is_connected = True
         except Exception as e:
             raise ConnectionFailedError(f"could not connect: {e}")
 
     def close(self) -> None:
         """Close connection.  Does nothing if not currently connected."""
-        self.log.debug("disconnect: disconnecting...")
-        if self.is_connected:
-            self.context.destroy()
-            if self.socket.closed is True:
-                self.is_connected = False
-                self.log.info("disconnected. Bye...")
+        self._log.debug("disconnect: disconnecting...")
+        if self._is_connected:
+            self._context.destroy()
+            if self._socket.closed is True:
+                self._is_connected = False
+                self._log.info("disconnected. Bye...")
             else:
-                self.log.error("disconnecting failed!")
+                self._log.error("disconnecting failed!")
         else:
-            self.log.info("already disconnected. Bye...")
+            self._log.info("already disconnected. Bye...")
 
     def read(self) -> typing.Any:
         """Read one json object from the socket.
@@ -106,7 +106,7 @@ class ZmqJsonReceiver:
             NotConnectedError:  If called without using a context manager or calling
                 :meth:`connect()` first.
         """
-        if not self.is_connected:
+        if not self._is_connected:
             raise NotConnectedError()
 
-        return self.socket.recv_json()
+        return self._socket.recv_json()
