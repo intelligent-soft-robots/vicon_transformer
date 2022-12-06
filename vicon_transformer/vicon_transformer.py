@@ -1,6 +1,5 @@
 import json
 import logging
-import os.path
 
 import numpy as np
 import zmq
@@ -50,9 +49,7 @@ class ViconJson:
             self.json_obj = self.read_vicon_json_from_zmq()
             self.log.info("Vicon connected via zmq")
         else:
-            self.json_obj = self.read_vicon_json_from_file(
-                self.get_config_dir() + "/" + fname
-            )
+            self.json_obj = self.read_vicon_json_from_file(fname)
             self.log.info("Vicon initialised via test frame from file")
         self._init_origin()
 
@@ -121,11 +118,6 @@ class ViconJson:
         with open(fname) as json_file:
             r = json.load(json_file)
         return r
-
-    def get_config_dir(self):
-        return os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "..", "..", "config")
-        )
 
     # measure distances
 
