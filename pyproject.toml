@@ -5,7 +5,10 @@ build-backend = "setuptools.build_meta"
 
 [[tool.mypy.overrides]]
 module = [
+    "geometry_msgs.*",
+    "rclpy.*",
     "scipy.*",
+    "tf2_ros.*",
     "vicon_dssdk",
     "zmq",
 ]
