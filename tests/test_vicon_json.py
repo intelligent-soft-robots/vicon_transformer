@@ -4,7 +4,7 @@ import math
 
 import pytest
 
-from vicon_transformer import ViconJson  # noqa
+from vicon_transformer import ViconJsonFile
 
 
 @pytest.fixture
@@ -23,8 +23,8 @@ def test_origin_init(test_data):
         ).reshape(3, 1)
         return w, theta
 
-    vT1 = ViconJson(fname=test_data / "test_frame1.json", timeout_in_ms=0)
-    vT2 = ViconJson(fname=test_data / "test_frame2.json", timeout_in_ms=0)
+    vT1 = ViconJsonFile(test_data / "test_frame1.json")
+    vT2 = ViconJsonFile(test_data / "test_frame2.json")
 
     for key in vT1.json_obj["subjectNames"]:
         # the marker of the Ballmaschine is not very good, better ignore it here

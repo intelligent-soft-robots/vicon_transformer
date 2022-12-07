@@ -4,7 +4,6 @@ import logging
 import numpy as np
 
 from .receiver import ZmqJsonReceiver
-from .errors import ConnectionFailedError
 
 # object names
 # ['frame_number', 'frame_rate', 'latency', 'my_frame_number', 'num_subjects',
@@ -27,47 +26,17 @@ def inv_T(T):
     return invT
 
 
-class ViconJson:
-    def __init__(
-        self,
-        fname="testViconFrameTableRot.json",  # 'testViconFrame.txt'
-        ip="10.42.2.29",
-        port="5555",
-        timeout_in_ms=5000,
-    ):
+class ViconJsonBase:
+    def __init__(self):
         self.log = logging.getLogger(__name__)
         self.T_origin_vicon = np.eye(4)
-        self.receiver = ZmqJsonReceiver(f"tcp://{ip}:{port}", timeout_in_ms)
-
-        try:
-            self.receiver.connect()
-            self.json_obj = self.read_vicon_json_from_zmq()
-            self.log.info("Vicon connected via zmq")
-        except ConnectionFailedError:
-            self.log.error("Connection failed.")
-
-            self.json_obj = self.read_vicon_json_from_file(fname)
-            self.log.info("Vicon initialised via test frame from file")
-        self._init_origin()
-
-    # init origin
 
     def _init_origin(self):
         originKey = "rll_ping_base"
         self.T_origin_vicon = inv_T(self.get_T(originKey))
 
-    # connecting and reading frames
-
-    def read_vicon_json_from_zmq(self):
-        self.json_obj = self.receiver.read()
-        return self.json_obj
-
-    def read_vicon_json_from_file(self, fname):
-        with open(fname) as json_file:
-            r = json.load(json_file)
-        return r
-
-    # measure distances
+    def read(self):
+        raise NotImplementedError()
 
     def print_distances(self):
         t_pos_1 = self.get_table1_T()[:3, -1]
@@ -149,3 +118,45 @@ class ViconJson:
             self.json_obj["subject_" + str(idx)]["global_rotation"]["matrix"][0]
         )
         return self.T_origin_vicon @ T(R, tr)
+
+
+class ViconJsonZmq(ViconJsonBase):
+    def __init__(
+        self,
+        ip="10.42.2.29",
+        port="5555",
+        timeout_in_ms=5000,
+    ):
+        super().__init__()
+
+        self.receiver = ZmqJsonReceiver(f"tcp://{ip}:{port}", timeout_in_ms)
+        self.receiver.connect()
+        self.json_obj = self.read()
+        self.log.info("Vicon connected via zmq")
+
+        self._init_origin()
+
+    def read(self):
+        self.json_obj = self.receiver.read()
+        return self.json_obj
+
+
+class ViconJsonFile(ViconJsonBase):
+    def __init__(
+        self,
+        filename,
+    ):
+        super().__init__()
+
+        self.json_obj = self.read_vicon_json_from_file(filename)
+        self.log.info("Vicon initialised via test frame from file %s", filename)
+
+        self._init_origin()
+
+    def read(self):
+        return self.json_obj
+
+    def read_vicon_json_from_file(self, fname):
+        with open(fname) as json_file:
+            r = json.load(json_file)
+        return r
