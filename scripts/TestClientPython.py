@@ -41,7 +41,7 @@ signal.signal(signal.SIGINT, signal_handler)
 
 # start vicon client
 client = ViconDataStream.Client()
-j = {}
+j = {"format_version": 2}
 tried = 0
 while tried < 10:
     try:
@@ -138,47 +138,39 @@ while tried < 10:
 
             # print( 'Server Orientation', client.GetServerOrientation() )
 
-            subjectNames = client.GetSubjectNames()
-            j["subjectNames"] = subjectNames
-            j["num_subjects"] = len(subjectNames)
-            sbj_idx = 0
-            for subjectName in subjectNames:
-                sbj_idx_str = "subject_" + str(sbj_idx)
-                sbj_idx = sbj_idx + 1
+            subject_names = client.GetSubjectNames()
 
-                segmentNames = client.GetSegmentNames(subjectName)
-                for segmentName in segmentNames:
-                    segmentChildren = client.GetSegmentChildren(
-                        subjectName, segmentName
+            def get_subject_data(subject_name: str, client: ViconDataStream.Client):
+                result = {}
+                segment_names = client.GetSegmentNames(subject_name)
+
+                # FIXME: this may loop over mutliple segments but will overwrite the
+                # values in each iteration?!
+                for segment_name in segment_names:
+                    # TODO: what are these children about?
+                    # segment_children = client.GetSegmentChildren(
+                    #    subject_name, segment_name
+                    # )
+
+                    result["global_translation"] = client.GetSegmentGlobalTranslation(
+                        subject_name, segment_name
                     )
 
-                    j[sbj_idx_str] = {}
-                    j[sbj_idx_str]["name"] = subjectName
-                    j[sbj_idx_str]["global_translation"] = {}
-                    j[sbj_idx_str][
-                        "global_translation"
-                    ] = client.GetSegmentGlobalTranslation(subjectName, segmentName)
-                    j[sbj_idx_str]["global_rotation"] = {}
-                    j[sbj_idx_str]["global_rotation"][
-                        "helical"
-                    ] = client.GetSegmentGlobalRotationHelical(subjectName, segmentName)
-                    j[sbj_idx_str]["global_rotation"][
-                        "eulerxyz"
-                    ] = client.GetSegmentGlobalRotationEulerXYZ(
-                        subjectName, segmentName
-                    )
-                    j[sbj_idx_str]["global_rotation"][
-                        "quaternion"
-                    ] = client.GetSegmentGlobalRotationQuaternion(
-                        subjectName, segmentName
-                    )
-                    j[sbj_idx_str]["global_rotation"][
-                        "matrix"
-                    ] = client.GetSegmentGlobalRotationMatrix(subjectName, segmentName)
+                    result["global_rotation"] = {
+                        "quaternion": client.GetSegmentGlobalRotationQuaternion(
+                            subject_name, segment_name
+                        )
+                    }
+
                 try:
-                    j[sbj_idx_str]["quality"] = client.GetObjectQuality(subjectName)
+                    result["quality"] = client.GetObjectQuality(subject_name)
                 except ViconDataStream.DataStreamException:
-                    j[sbj_idx_str]["quality"] = "Not present"
+                    result["quality"] = "Not present"
+
+            j["subjects"] = {
+                subject_name: get_subject_data(subject_name, client)
+                for subject_name in subject_names
+            }
 
             # broadcast json object
             socket.send_json(j)
