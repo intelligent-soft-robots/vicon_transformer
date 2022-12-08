@@ -11,6 +11,11 @@ def test_data():
     return pathlib.PurePath(__file__).parent / "data"
 
 
+def test_timestamp(test_data) -> None:
+    vicon = ViconJsonFile(test_data / "test_frame1.json")
+    assert vicon.get_timestamp() == 1638538681.615901200
+
+
 def test_origin_init(test_data) -> None:
     vT1 = ViconJsonFile(test_data / "test_frame1.json")
     vT2 = ViconJsonFile(test_data / "test_frame2.json")

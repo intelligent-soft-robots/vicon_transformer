@@ -51,7 +51,8 @@ class ViconJsonBase:
         t_rob_origin = self.get_robot_base_T().translation
         print(t_rob_origin)
 
-    # get object rotations and translations
+    def get_timestamp(self) -> float:
+        return self.json_obj["time_stamp"] / 1e9
 
     def get_robot_rot(self):
         # TODO
