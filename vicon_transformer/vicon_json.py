@@ -117,13 +117,12 @@ class ViconJsonBase:
 class ViconJsonZmq(ViconJsonBase):
     def __init__(
         self,
-        ip="10.42.2.29",
-        port="5555",
+        address="tcp://10.42.2.29:5555",  # TODO: do not use this as default here
         timeout_in_ms=5000,
     ):
         super().__init__()
 
-        self.receiver = ZmqJsonReceiver(f"tcp://{ip}:{port}", timeout_in_ms)
+        self.receiver = ZmqJsonReceiver(address, timeout_in_ms)
         self.receiver.connect()
         self.json_obj = self.read()
         self.log.info("Vicon connected via zmq")
