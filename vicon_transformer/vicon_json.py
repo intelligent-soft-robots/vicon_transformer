@@ -1,9 +1,11 @@
 import json
 import logging
+import typing
 
 import numpy as np
 
 from .receiver import ZmqJsonReceiver
+from .transform import Transformation, Rotation
 
 # object names
 # ['frame_number', 'frame_rate', 'latency', 'my_frame_number', 'num_subjects',
@@ -31,16 +33,31 @@ def get_translation(T: np.ndarray) -> np.ndarray:
 
 
 class ViconJsonBase:
-    def __init__(self):
+    FORMAT_VERSION = 2
+
+    def __init__(self) -> None:
         self.log = logging.getLogger(__name__)
         self.T_origin_vicon = np.eye(4)
 
-    def _init_origin(self):
+        self.json_obj: typing.Dict
+
+    def _init_origin(self) -> None:
         originKey = "rll_ping_base"
         self.T_origin_vicon = inv_T(self.get_T(originKey))
 
+    def _check_format_version(self, record):
+        format_version = record.get("format_version")
+        if format_version != self.FORMAT_VERSION:
+            raise RuntimeError(
+                f"Incompatible format version '{format_version}'."
+                f"  Expected {self.FORMAT_VERSION}."
+            )
+
     def read(self):
         raise NotImplementedError()
+
+    def get_subject_names(self) -> typing.List[str]:
+        return list(self.json_obj["subjects"].keys())
 
     def print_distances(self):
         t_pos_1 = self.get_table1_T()[:3, -1]
@@ -112,16 +129,15 @@ class ViconJsonBase:
         return self.get_T("TT Platte_Eckteil 4")
 
     # access json methods
-    def get_T(self, key):
+    def get_T(self, subject_name):
         # Returns homogenous transformation in origin frame
-        idx = self.json_obj["subjectNames"].index(key)
-        tr = 1e-3 * np.asarray(
-            self.json_obj["subject_" + str(idx)]["global_translation"][0]
-        ).reshape(3, 1)
-        R = np.asarray(
-            self.json_obj["subject_" + str(idx)]["global_rotation"]["matrix"][0]
-        )
-        return self.T_origin_vicon @ T(R, tr)
+
+        subject_data = self.json_obj["subjects"][subject_name]
+        translation = 1e-3 * np.asarray(subject_data["global_translation"][0])
+        rotation = Rotation(subject_data["global_rotation"]["quaternion"][0])
+        T = Transformation(rotation, translation)
+
+        return self.T_origin_vicon @ T.as_matrix()
 
 
 class ViconJsonZmq(ViconJsonBase):
@@ -141,7 +157,9 @@ class ViconJsonZmq(ViconJsonBase):
         self._init_origin()
 
     def read(self):
-        self.json_obj = self.receiver.read()
+        record = self.receiver.read()
+        self._check_format_version(record)
+        self.json_obj = record
         return self.json_obj
 
 
@@ -163,4 +181,7 @@ class ViconJsonFile(ViconJsonBase):
     def read_vicon_json_from_file(self, fname):
         with open(fname) as json_file:
             r = json.load(json_file)
+
+        self._check_format_version(r)
+
         return r
