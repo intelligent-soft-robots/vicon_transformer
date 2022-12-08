@@ -309,3 +309,11 @@ def test_basic_transforms_ping_simple_translation(test_data):
             [0, 0, 0, 1],
         ],
     )
+
+
+def test_get_table_pos(test_data):
+    vicon = ViconJsonFile(test_data / "frame_ping_at_origin.json")
+
+    np.testing.assert_array_almost_equal(
+        vicon.get_table_pos(), [-253.98395753, 53.75158628, 31.22968497]
+    )
