@@ -4,6 +4,7 @@ import typing
 
 import numpy as np
 
+from . import errors
 from .receiver import ZmqJsonReceiver
 from .transform import Transformation, Rotation
 
@@ -105,9 +106,12 @@ class ViconJsonBase:
 
     # access json methods
     def get_T(self, subject_name: str) -> Transformation:
-        # Returns homogenous transformation in origin frame
-
+        """Returns homogeneous transformation in origin frame."""
         subject_data = self.json_obj["subjects"][subject_name]
+
+        if subject_data["quality"] == "Not present":
+            raise errors.SubjectNotPresentError(subject_name)
+
         translation = 1e-3 * np.asarray(subject_data["global_translation"][0])
         rotation = Rotation(subject_data["global_rotation"]["quaternion"][0])
         tf = Transformation(rotation, translation)
