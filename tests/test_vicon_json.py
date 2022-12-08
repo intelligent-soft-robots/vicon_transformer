@@ -344,3 +344,32 @@ def test_get_table_pos(test_data):
     np.testing.assert_array_almost_equal(
         vicon.get_table_pos(), [-0.25398395753, 0.05375158628, 0.03122968497]
     )
+
+
+def test_get_robot_shoulder_T(test_data):
+    vicon = ViconJsonFile(test_data / "frame_ping_at_origin.json")
+
+    np.testing.assert_array_almost_equal(
+        vicon.get_robot_shoulder_T(),
+        [
+            [
+                0.8663438846138151,
+                0.4993031329659253,
+                -0.012027260812682643,
+                0.90162265,
+            ],
+            [
+                0.49936305903567846,
+                -0.8663894341721914,
+                0.002425618543688639,
+                0.30979481,
+            ],
+            [
+                -0.009209172751897504,
+                -0.008107389542971665,
+                -0.9999247278530641,
+                0.47030543,
+            ],
+            [0.0, 0.0, 0.0, 1.0],
+        ],
+    )
