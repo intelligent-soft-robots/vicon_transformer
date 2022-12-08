@@ -5,11 +5,38 @@ import math
 import pytest
 
 from vicon_transformer import ViconJsonFile
+import vicon_transformer.vicon_json as vj
 
 
 @pytest.fixture
 def test_data():
     return pathlib.PurePath(__file__).parent / "data"
+
+
+def test_T():
+    R = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    p = [0.1, 0.2, 0.3]
+    T = vj.T(R, p)
+    np.testing.assert_array_equal(
+        T, [[1, 2, 3, 0.1], [4, 5, 6, 0.2], [7, 8, 9, 0.3], [0, 0, 0, 1]]
+    )
+
+
+def test_inv_T():
+    T = np.array(
+        [
+            [0.81379768, -0.44096961, 0.37852231, 0.5],
+            [0.46984631, 0.88256412, 0.01802831, 1.0],
+            [-0.34202014, 0.16317591, 0.92541658, 1.245],
+            [0, 0, 0, 1],
+        ]
+    )
+    np.testing.assert_array_almost_equal(vj.inv_T(T), np.linalg.inv(T))
+
+
+def test_get_translation():
+    T = np.array([[1, 2, 3, 0.1], [4, 5, 6, 0.2], [7, 8, 9, 0.3], [0, 0, 0, 1]])
+    np.testing.assert_array_equal(vj.get_translation(T), [0.1, 0.2, 0.3])
 
 
 def test_origin_init(test_data):
@@ -315,5 +342,5 @@ def test_get_table_pos(test_data):
     vicon = ViconJsonFile(test_data / "frame_ping_at_origin.json")
 
     np.testing.assert_array_almost_equal(
-        vicon.get_table_pos(), [-253.98395753, 53.75158628, 31.22968497]
+        vicon.get_table_pos(), [-0.25398395753, 0.05375158628, 0.03122968497]
     )
