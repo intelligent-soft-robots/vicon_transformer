@@ -141,7 +141,9 @@ while tried < 10:
 
             subject_names = client.GetSubjectNames()
 
-            def get_subject_data(subject_name: str, client: ViconDataStream.Client):
+            def get_subject_data(
+                subject_name: str, client: ViconDataStream.Client
+            ) -> dict:
                 result = {}
                 segment_names = client.GetSegmentNames(subject_name)
 
@@ -167,6 +169,8 @@ while tried < 10:
                     result["quality"] = client.GetObjectQuality(subject_name)
                 except ViconDataStream.DataStreamException:
                     result["quality"] = "Not present"
+
+                return result
 
             j["subjects"] = {
                 subject_name: get_subject_data(subject_name, client)
