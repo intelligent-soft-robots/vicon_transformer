@@ -4,6 +4,7 @@ import argparse
 import signal
 import sys
 import time
+import typing
 from os.path import dirname, abspath, join
 
 import zmq
@@ -41,7 +42,7 @@ signal.signal(signal.SIGINT, signal_handler)
 
 # start vicon client
 client = ViconDataStream.Client()
-j = {"format_version": 2}
+j: typing.Dict[str, typing.Any] = {"format_version": 2}
 tried = 0
 while tried < 10:
     try:
