@@ -26,6 +26,10 @@ def inv_T(T):
     return invT
 
 
+def get_translation(T: np.ndarray) -> np.ndarray:
+    return T[:3, 3]
+
+
 class ViconJsonBase:
     def __init__(self):
         self.log = logging.getLogger(__name__)
@@ -83,10 +87,10 @@ class ViconJsonBase:
         return T_orig_base @ T_base_shoulder
 
     def get_table_pos(self):
-        t_pos_1 = self.get_table1_trans()
-        t_pos_2 = self.get_table2_trans()
-        t_pos_3 = self.get_table3_trans()
-        t_pos_4 = self.get_table4_trans()
+        t_pos_1 = get_translation(self.get_table1_T())
+        t_pos_2 = get_translation(self.get_table2_T())
+        t_pos_3 = get_translation(self.get_table3_T())
+        t_pos_4 = get_translation(self.get_table4_T())
         t = (t_pos_1 + t_pos_2 + t_pos_3 + t_pos_4) / 4
 
         return t
