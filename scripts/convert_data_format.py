@@ -11,10 +11,13 @@ import logging
 import pathlib
 import pickle
 import sys
+import types
+import typing
 
 
-def convert_record_1to2(record):
-
+def convert_record_1to2(
+    record: typing.Dict[str, typing.Any]
+) -> typing.Dict[str, typing.Any]:
     del record["num_subjects"]
     del record["subjectNames"]
 
@@ -41,7 +44,7 @@ def convert_record_1to2(record):
     return record
 
 
-def main():
+def main() -> int:
     logging.basicConfig(level=logging.INFO)
 
     parser = argparse.ArgumentParser(description=__doc__)
@@ -53,6 +56,7 @@ def main():
     )
     args = parser.parse_args()
 
+    loader: types.ModuleType
     if args.input_file.suffix == ".json":
         single_record = True
         loader = json
