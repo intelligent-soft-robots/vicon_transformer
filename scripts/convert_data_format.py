@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Convert a recorded pickle file to the new format."""
+"""Convert a recorded pickle file of an older data format to the newest one.
+
+The structure in which the Vicon data is provided changed in the past.  This script
+converts files recorded with an older format to the newest one, so they can be used with
+the latest version of the software.
+"""
 import argparse
 import json
 import logging
