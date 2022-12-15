@@ -8,6 +8,8 @@
 #include <fmt/format.h>
 #include <vicon-datastream-sdk/DataStreamClient.h>
 
+#include <vicon_transformer/ostream.hpp>
+
 namespace vicon_transformer
 {
 class NotConnectedError : public std::runtime_error
@@ -19,6 +21,11 @@ public:
     }
 };
 
+/**
+ * @brief Indicates that a Vicon SDK function returned a bad result.
+ *
+ * The actual result is provided in the exception's message.
+ */
 class BadResultError : public std::runtime_error
 {
 public:

@@ -43,155 +43,20 @@
 #include <string.h>
 #include <time.h>
 
+#include <fmt/format.h>
 #include <fmt/ostream.h>
+#include <fmt/ranges.h>
+
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
 #include <vicon_transformer/errors.hpp>
+#include <vicon_transformer/ostream.hpp>
 
 using namespace ViconDataStreamSDK::CPP;
 
-namespace
+namespace vicon_transformer
 {
-template <class T, std::size_t N>
-std::ostream& operator<<(std::ostream& os, const std::array<T, N>& arr)
-{
-    std::copy(arr.cbegin(), arr.cend(), std::ostream_iterator<T>(os, " "));
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const Output_GetVersion& x)
-{
-    os << x.Major << "." << x.Minor << "." << x.Point << "." << x.Revision;
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const Direction::Enum& dir)
-{
-    switch (dir)
-    {
-        case Direction::Forward:
-            os << "Forward";
-            break;
-        case Direction::Backward:
-            os << "Backward";
-            break;
-        case Direction::Left:
-            os << "Left";
-            break;
-        case Direction::Right:
-            os << "Right";
-            break;
-        case Direction::Up:
-            os << "Up";
-            break;
-        case Direction::Down:
-            os << "Down";
-            break;
-        default:
-            os << "Unknown";
-            break;
-    }
-
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const Result::Enum& result)
-{
-    switch (result)
-    {
-        case Result::Unknown:
-            os << "Unknown";
-            break;
-        case Result::NotImplemented:
-            os << "NotImplemented";
-            break;
-        case Result::Success:
-            os << "Success";
-            break;
-        case Result::InvalidHostName:
-            os << "InvalidHostName";
-            break;
-        case Result::InvalidMulticastIP:
-            os << "InvalidMulticastIP";
-            break;
-        case Result::ClientAlreadyConnected:
-            os << "ClientAlreadyConnected";
-            break;
-        case Result::ClientConnectionFailed:
-            os << "ClientConnectionFailed";
-            break;
-        case Result::ServerAlreadyTransmittingMulticast:
-            os << "ServerAlreadyTransmittingMulticast";
-            break;
-        case Result::ServerNotTransmittingMulticast:
-            os << "ServerNotTransmittingMulticast";
-            break;
-        case Result::NotConnected:
-            os << "NotConnected";
-            break;
-        case Result::NoFrame:
-            os << "NoFrame";
-            break;
-        case Result::InvalidIndex:
-            os << "InvalidIndex";
-            break;
-        case Result::InvalidCameraName:
-            os << "InvalidCameraName";
-            break;
-        case Result::InvalidSubjectName:
-            os << "InvalidSubjectName";
-            break;
-        case Result::InvalidSegmentName:
-            os << "InvalidSegmentName";
-            break;
-        case Result::InvalidMarkerName:
-            os << "InvalidMarkerName";
-            break;
-        case Result::InvalidDeviceName:
-            os << "InvalidDeviceName";
-            break;
-        case Result::InvalidDeviceOutputName:
-            os << "InvalidDeviceOutputName";
-            break;
-        case Result::InvalidLatencySampleName:
-            os << "InvalidLatencySampleName";
-            break;
-        case Result::CoLinearAxes:
-            os << "CoLinearAxes";
-            break;
-        case Result::LeftHandedAxes:
-            os << "LeftHandedAxes";
-            break;
-        case Result::HapticAlreadySet:
-            os << "HapticAlreadySet";
-            break;
-        case Result::EarlyDataRequested:
-            os << "EarlyDataRequested";
-            break;
-        case Result::LateDataRequested:
-            os << "LateDataRequested";
-            break;
-        case Result::InvalidOperation:
-            os << "InvalidOperation";
-            break;
-        case Result::NotSupported:
-            os << "NotSupported";
-            break;
-        case Result::ConfigurationFailed:
-            os << "ConfigurationFailed";
-            break;
-        case Result::NotPresent:
-            os << "NotPresent";
-            break;
-    }
-    return os;
-}
-
-}  // namespace
-
-namespace vicon_transformer{
-
 struct SubjectData
 {
     bool is_visible;
@@ -278,6 +143,7 @@ public:
 
             const Result::Enum connect_result =
                 client_.Connect(host_name_).Result;
+            log_->debug("connect_result = {}", connect_result);
             if (connect_result != Result::Success)
             {
                 switch (connect_result)
@@ -495,7 +361,7 @@ private:
         }
     }
 };
-}
+}  // namespace vicon_transformer
 
 int main(int argc, char* argv[])
 {
@@ -504,7 +370,7 @@ int main(int argc, char* argv[])
     {
         logger = spdlog::stderr_color_mt("root");
         // auto log_level = spdlog::level::from_str(config.logger_level);
-        // log_->set_level(log_level);
+        logger->set_level(spdlog::level::debug);
     }
 
     // Program options
@@ -568,7 +434,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    vicon_transformer::ViconReceiver receiver(host_name, config);
+    vicon_transformer::ViconReceiver receiver(host_name, config, logger);
     receiver.connect();
     receiver.filter_subjects(filtered_subjects);
     receiver.print_info();

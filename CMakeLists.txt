@@ -26,24 +26,28 @@ ament_export_dependencies(fmt spdlog)
 ament_python_install_package(${PROJECT_NAME} PACKAGE_DIR ${PROJECT_NAME})
 
 
-add_library(${PROJECT_NAME}_ostream
-    src/ostream.cpp
-)
-target_include_directories(${PROJECT_NAME}_ostream PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
-)
-target_link_libraries(${PROJECT_NAME}_ostream
-    vicon-datastream-sdk::ViconDataStreamSDK_CPP
-)
+#add_library(${PROJECT_NAME}_ostream
+#    src/ostream.cpp
+#)
+#target_include_directories(${PROJECT_NAME}_ostream PUBLIC
+#    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+#    $<INSTALL_INTERFACE:include>
+#)
+#target_link_libraries(${PROJECT_NAME}_ostream
+#    fmt::fmt
+#    vicon-datastream-sdk::ViconDataStreamSDK_CPP
+#)
 
 
 add_executable(vicon_print_data src/vicon_print_data.cpp)
 target_link_libraries(vicon_print_data
     fmt::fmt
     spdlog::spdlog
-
-    ${PROJECT_NAME}_ostream
+    vicon-datastream-sdk::ViconDataStreamSDK_CPP
+)
+target_include_directories(vicon_print_data PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
 )
 
 
@@ -59,7 +63,6 @@ install(DIRECTORY include/ DESTINATION include)
 
 install(
     TARGETS
-        ${PROJECT_NAME}_ostream
         vicon_print_data
     EXPORT export_${PROJECT_NAME}
     LIBRARY DESTINATION lib
