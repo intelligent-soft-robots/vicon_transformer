@@ -16,34 +16,33 @@ endif()
 find_package(ament_cmake REQUIRED)
 
 #find_package(Eigen3 REQUIRED)
+#find_package(pybind11 REQUIRED)
 find_package(fmt REQUIRED)
 find_package(spdlog REQUIRED)
-#find_package(pybind11 REQUIRED)
 find_package(vicon-datastream-sdk REQUIRED)
 
-ament_export_dependencies(fmt spdlog)
+ament_export_dependencies(fmt spdlog vicon-datastream-sdk)
 
 ament_python_install_package(${PROJECT_NAME} PACKAGE_DIR ${PROJECT_NAME})
 
 
-#add_library(${PROJECT_NAME}_ostream
-#    src/ostream.cpp
-#)
-#target_include_directories(${PROJECT_NAME}_ostream PUBLIC
-#    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-#    $<INSTALL_INTERFACE:include>
-#)
-#target_link_libraries(${PROJECT_NAME}_ostream
-#    fmt::fmt
-#    vicon-datastream-sdk::ViconDataStreamSDK_CPP
-#)
+add_library(vicon_receiver
+    src/vicon_receiver.cpp
+)
+target_include_directories(vicon_receiver PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+target_link_libraries(vicon_receiver
+    fmt::fmt
+    spdlog::spdlog
+    vicon-datastream-sdk::ViconDataStreamSDK_CPP
+)
 
 
 add_executable(vicon_print_data src/vicon_print_data.cpp)
 target_link_libraries(vicon_print_data
-    fmt::fmt
-    spdlog::spdlog
-    vicon-datastream-sdk::ViconDataStreamSDK_CPP
+    vicon_receiver
 )
 target_include_directories(vicon_print_data PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -63,6 +62,7 @@ install(DIRECTORY include/ DESTINATION include)
 
 install(
     TARGETS
+        vicon_receiver
         vicon_print_data
     EXPORT export_${PROJECT_NAME}
     LIBRARY DESTINATION lib

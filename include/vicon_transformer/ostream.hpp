@@ -144,4 +144,4 @@ inline std::ostream& operator<<(
     return os;
 }
 
-}  // namespace vicon_transformer
+}  // namespace ViconDataStreamSDK::CPP
