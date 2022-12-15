@@ -19,6 +19,7 @@ find_package(ament_cmake REQUIRED)
 find_package(fmt REQUIRED)
 find_package(spdlog REQUIRED)
 #find_package(pybind11 REQUIRED)
+find_package(vicon-datastream-sdk REQUIRED)
 
 ament_export_dependencies(fmt spdlog)
 
@@ -39,6 +40,13 @@ ament_python_install_package(${PROJECT_NAME} PACKAGE_DIR ${PROJECT_NAME})
 #)
 
 
+add_executable(vicon_print_data src/vicon_print_data.cpp)
+target_link_libraries(vicon_print_data
+    spdlog::spdlog
+    vicon-datastream-sdk::ViconDataStreamSDK_CPP
+)
+
+
 ## Python Bindings
 #add_pybind11_module(solo12 srcpy/solo12.cpp
 #    LINK_LIBRARIES 
@@ -49,15 +57,15 @@ ament_python_install_package(${PROJECT_NAME} PACKAGE_DIR ${PROJECT_NAME})
 
 install(DIRECTORY include/ DESTINATION include)
 
-#install(
-#    TARGETS
-#        demo_solo12_hold
-#    EXPORT export_${PROJECT_NAME}
-#    LIBRARY DESTINATION lib
-#    ARCHIVE DESTINATION lib
-#    RUNTIME DESTINATION lib/${PROJECT_NAME}
-#    INCLUDES DESTINATION include
-#)
+install(
+    TARGETS
+        vicon_print_data
+    EXPORT export_${PROJECT_NAME}
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION lib/${PROJECT_NAME}
+    INCLUDES DESTINATION include
+)
 
 #install_scripts(
 #    demos/demo_solo12_sine.py
