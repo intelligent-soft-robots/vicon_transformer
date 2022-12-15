@@ -47,6 +47,8 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
+#include <vicon_transformer/errors.hpp>
+
 using namespace ViconDataStreamSDK::CPP;
 
 namespace
@@ -188,23 +190,7 @@ std::ostream& operator<<(std::ostream& os, const Result::Enum& result)
 
 }  // namespace
 
-class NotConnectedError : public std::runtime_error
-{
-public:
-    NotConnectedError()
-        : std::runtime_error("Not connected to the Vicon Server.")
-    {
-    }
-};
-
-class BadResultError : public std::runtime_error
-{
-public:
-    BadResultError(Result::Enum result)
-        : std::runtime_error(fmt::format("{}", result))
-    {
-    }
-};
+namespace vicon_transformer{
 
 struct SubjectData
 {
@@ -509,6 +495,7 @@ private:
         }
     }
 };
+}
 
 int main(int argc, char* argv[])
 {
@@ -531,7 +518,7 @@ int main(int argc, char* argv[])
         arg_num++;
     }
 
-    ViconReceiverConfig config;
+    vicon_transformer::ViconReceiverConfig config;
     bool only_once = false;
     std::vector<std::string> filtered_subjects;
 
@@ -581,7 +568,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    ViconReceiver receiver(host_name, config);
+    vicon_transformer::ViconReceiver receiver(host_name, config);
     receiver.connect();
     receiver.filter_subjects(filtered_subjects);
     receiver.print_info();
@@ -591,7 +578,7 @@ int main(int argc, char* argv[])
     //  Loop until a key is pressed
     while (true)
     {
-        ViconFrame frame = receiver.read();
+        vicon_transformer::ViconFrame frame = receiver.read();
         receiver.print_latency_info();
         fmt::print("{}\n\n", frame);
 

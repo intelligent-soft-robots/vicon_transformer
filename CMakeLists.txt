@@ -26,25 +26,24 @@ ament_export_dependencies(fmt spdlog)
 ament_python_install_package(${PROJECT_NAME} PACKAGE_DIR ${PROJECT_NAME})
 
 
-#add_library(solo12_config
-#    src/solo12_config.cpp
-#)
-#target_include_directories(solo12_config PUBLIC
-#    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-#    $<INSTALL_INTERFACE:include>
-#)
-#target_link_libraries(solo12_config
-#    Eigen3::Eigen
-#    yaml_utils::yaml_utils
-#    fmt::fmt
-#)
+add_library(${PROJECT_NAME}_ostream
+    src/ostream.cpp
+)
+target_include_directories(${PROJECT_NAME}_ostream PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+target_link_libraries(${PROJECT_NAME}_ostream
+    vicon-datastream-sdk::ViconDataStreamSDK_CPP
+)
 
 
 add_executable(vicon_print_data src/vicon_print_data.cpp)
 target_link_libraries(vicon_print_data
     fmt::fmt
     spdlog::spdlog
-    vicon-datastream-sdk::ViconDataStreamSDK_CPP
+
+    ${PROJECT_NAME}_ostream
 )
 
 
@@ -60,6 +59,7 @@ install(DIRECTORY include/ DESTINATION include)
 
 install(
     TARGETS
+        ${PROJECT_NAME}_ostream
         vicon_print_data
     EXPORT export_${PROJECT_NAME}
     LIBRARY DESTINATION lib
@@ -69,9 +69,7 @@ install(
 )
 
 #install_scripts(
-#    demos/demo_solo12_sine.py
-#    demos/demo_solo12_simulation.py
-#    scripts/solo12_show_data.py
+#    scripts/example.py
 #
 #    DESTINATION lib/${PROJECT_NAME}
 #)
@@ -86,5 +84,5 @@ if(BUILD_TESTING)
 endif()
 
 
-#ament_export_interfaces(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+ament_export_interfaces(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_package()
