@@ -42,6 +42,7 @@ ament_python_install_package(${PROJECT_NAME} PACKAGE_DIR ${PROJECT_NAME})
 
 add_executable(vicon_print_data src/vicon_print_data.cpp)
 target_link_libraries(vicon_print_data
+    fmt::fmt
     spdlog::spdlog
     vicon-datastream-sdk::ViconDataStreamSDK_CPP
 )

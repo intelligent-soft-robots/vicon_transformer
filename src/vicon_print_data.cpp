@@ -43,6 +43,7 @@
 #include <string.h>
 #include <time.h>
 
+#include <fmt/ostream.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
