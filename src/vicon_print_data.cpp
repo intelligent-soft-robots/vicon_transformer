@@ -51,19 +51,6 @@ using namespace ViconDataStreamSDK::CPP;
 
 namespace
 {
-std::string to_string(const bool i_Value)
-{
-    return i_Value ? "True" : "False";
-}
-
-template <typename T>
-std::string to_string(const T& x)
-{
-    std::stringstream ss;
-    ss << x;
-    return ss.str();
-}
-
 template <class T, std::size_t N>
 std::ostream& operator<<(std::ostream& os, const std::array<T, N>& arr)
 {
@@ -213,7 +200,8 @@ public:
 class BadResultError : public std::runtime_error
 {
 public:
-    BadResultError(Result::Enum result) : std::runtime_error(to_string(result))
+    BadResultError(Result::Enum result)
+        : std::runtime_error(fmt::format("{}", result))
     {
     }
 };
@@ -238,22 +226,20 @@ struct ViconFrame
 
     friend std::ostream& operator<<(std::ostream& os, const ViconFrame& vf)
     {
-        os << "Frame Number: " << vf.frame_number << std::endl;
-        os << "Frame Rate: " << vf.frame_rate << std::endl;
-        os << "Latency: " << vf.latency << std::endl;
-        os << "Timestamp: " << vf.time_stamp << std::endl;
+        fmt::print(os, "Frame Number: {}\n", vf.frame_number);
+        fmt::print(os, "Frame Rate: {}\n", vf.frame_rate);
+        fmt::print(os, "Latency: {}\n", vf.latency);
+        fmt::print(os, "Timestamp: {}\n", vf.time_stamp);
 
-        os << "Subjects (" << vf.subjects.size() << "):" << std::endl;
-        for (auto const& [subject_name, subject_data] : vf.subjects)
+        fmt::print(os, "Subjects ({}):\n", vf.subjects.size());
+        for (auto const& [name, data] : vf.subjects)
         {
-            os << "  " << subject_name << std::endl;
-            os << "    Visible: " << to_string(subject_data.is_visible)
-               << std::endl;
-            os << "    Translation: " << subject_data.global_translation
-               << std::endl;
-            os << "    Rotation: " << subject_data.global_rotation_quaternion
-               << std::endl;
-            os << "    Quality: " << subject_data.quality << std::endl;
+            fmt::print(os, "  {}\n", name);
+            fmt::print(os, "    Visible: {}\n", data.is_visible);
+            fmt::print(os, "    Translation: {}\n", data.global_translation);
+            fmt::print(
+                os, "    Rotation: {}\n", data.global_rotation_quaternion);
+            fmt::print(os, "    Quality: {}\n", data.quality);
         }
 
         return os;
@@ -362,47 +348,36 @@ public:
 
     void print_info() const
     {
-        std::cout << "Version: " << client_.GetVersion() << std::endl;
+        fmt::print("Version: {}\n", client_.GetVersion());
 
-        std::cout << "Segment Data Enabled: "
-                  << to_string(client_.IsSegmentDataEnabled().Enabled)
-                  << std::endl;
-        std::cout << "Lightweight Segment Data Enabled: "
-                  << to_string(
-                         client_.IsLightweightSegmentDataEnabled().Enabled)
-                  << std::endl;
-        std::cout << "Marker Data Enabled: "
-                  << to_string(client_.IsMarkerDataEnabled().Enabled)
-                  << std::endl;
-        std::cout << "Unlabeled Marker Data Enabled: "
-                  << to_string(client_.IsUnlabeledMarkerDataEnabled().Enabled)
-                  << std::endl;
-        std::cout << "Device Data Enabled: "
-                  << to_string(client_.IsDeviceDataEnabled().Enabled)
-                  << std::endl;
-        std::cout << "Centroid Data Enabled: "
-                  << to_string(client_.IsCentroidDataEnabled().Enabled)
-                  << std::endl;
-        std::cout << "Marker Ray Data Enabled: "
-                  << to_string(client_.IsMarkerRayDataEnabled().Enabled)
-                  << std::endl;
-        std::cout << "Centroid Data Enabled: "
-                  << to_string(client_.IsCentroidDataEnabled().Enabled)
-                  << std::endl;
-        std::cout << "Greyscale Data Enabled: "
-                  << to_string(client_.IsGreyscaleDataEnabled().Enabled)
-                  << std::endl;
-        std::cout << "Video Data Enabled: "
-                  << to_string(client_.IsVideoDataEnabled().Enabled)
-                  << std::endl;
-        std::cout << "Debug Data Enabled: "
-                  << to_string(client_.IsDebugDataEnabled().Enabled)
-                  << std::endl;
+        fmt::print("Segment Data Enabled: {}\n",
+                   client_.IsSegmentDataEnabled().Enabled);
+        fmt::print("Lightweight Segment Data Enabled: {}\n",
+                   client_.IsLightweightSegmentDataEnabled().Enabled);
+        fmt::print("Marker Data Enabled: {}\n",
+                   client_.IsMarkerDataEnabled().Enabled);
+        fmt::print("Unlabeled Marker Data Enabled: {}\n",
+                   client_.IsUnlabeledMarkerDataEnabled().Enabled);
+        fmt::print("Device Data Enabled: {}\n",
+                   client_.IsDeviceDataEnabled().Enabled);
+        fmt::print("Centroid Data Enabled: {}\n",
+                   client_.IsCentroidDataEnabled().Enabled);
+        fmt::print("Marker Ray Data Enabled: {}\n",
+                   client_.IsMarkerRayDataEnabled().Enabled);
+        fmt::print("Centroid Data Enabled: {}\n",
+                   client_.IsCentroidDataEnabled().Enabled);
+        fmt::print("Greyscale Data Enabled: {}\n",
+                   client_.IsGreyscaleDataEnabled().Enabled);
+        fmt::print("Video Data Enabled: {}\n",
+                   client_.IsVideoDataEnabled().Enabled);
+        fmt::print("Debug Data Enabled: {}\n",
+                   client_.IsDebugDataEnabled().Enabled);
 
         Output_GetAxisMapping axis_mapping = client_.GetAxisMapping();
-        std::cout << "Axis Mapping: X-" << axis_mapping.XAxis << " Y-"
-                  << axis_mapping.YAxis << " Z-" << axis_mapping.ZAxis
-                  << std::endl;
+        fmt::print("Axis Mapping: X:{} Y:{} Z:{}\n",
+                   axis_mapping.XAxis,
+                   axis_mapping.YAxis,
+                   axis_mapping.ZAxis);
     }
 
     ViconFrame read()
@@ -467,22 +442,17 @@ public:
 
     void print_latency_info() const
     {
-        std::cout << "Latency: " << client_.GetLatencyTotal().Total << "s"
-                  << std::endl;
+        fmt::print("Latency: {} s\n", client_.GetLatencyTotal().Total);
 
-        for (unsigned int LatencySampleIndex = 0;
-             LatencySampleIndex < client_.GetLatencySampleCount().Count;
-             ++LatencySampleIndex)
+        for (unsigned int i = 0; i < client_.GetLatencySampleCount().Count; ++i)
         {
-            std::string SampleName =
-                client_.GetLatencySampleName(LatencySampleIndex).Name;
-            double SampleValue =
-                client_.GetLatencySampleValue(SampleName).Value;
+            std::string sample_name = client_.GetLatencySampleName(i).Name;
+            double sample_value =
+                client_.GetLatencySampleValue(sample_name).Value;
 
-            std::cout << "  " << SampleName << " " << SampleValue << "s"
-                      << std::endl;
+            fmt::print("  {}: {} s\n", sample_name, sample_value);
         }
-        std::cout << std::endl;
+        fmt::print("\n");
     }
 
     void filter_subjects(const std::vector<std::string> subjects)
@@ -570,11 +540,14 @@ int main(int argc, char* argv[])
         std::string arg = argv[a];
         if (arg == "--help")
         {
-            std::cout << argv[0]
-                      << " <HostName>: allowed options include:" << std::endl;
-            std::cout << " --help" << std::endl;
-            std::cout << " --once" << std::endl;
-
+            fmt::print(
+                "Usage: {} <host name> [options]\n\n"
+                "Options:\n"
+                " --help\n"
+                " --lightweight\n"
+                " --subjects <subject name> [<subject name> ...]\n"
+                " --once\n",
+                argv[0]);
             return 0;
         }
         else if (arg == "--lightweight")
@@ -602,8 +575,8 @@ int main(int argc, char* argv[])
         }
         else
         {
-            std::cerr << "Failed to understand argument <" << argv[a]
-                      << ">...exiting" << std::endl;
+            fmt::print(
+                std::cerr, "Failed to understand argument '{}'", argv[a]);
             return 1;
         }
     }
@@ -613,14 +586,14 @@ int main(int argc, char* argv[])
     receiver.filter_subjects(filtered_subjects);
     receiver.print_info();
 
-    std::cout << "\n==============================\n" << std::endl;
+    fmt::print("\n==============================\n\n");
 
     //  Loop until a key is pressed
     while (true)
     {
         ViconFrame frame = receiver.read();
         receiver.print_latency_info();
-        std::cout << frame << std::endl;
+        fmt::print("{}\n\n", frame);
 
         if (only_once)
         {
