@@ -14,12 +14,12 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-
-#find_package(Eigen3 REQUIRED)
-#find_package(pybind11 REQUIRED)
+find_package(pybind11 REQUIRED)
 find_package(fmt REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(vicon-datastream-sdk REQUIRED)
+
+find_package(mpi_cmake_modules REQUIRED)
 
 ament_export_dependencies(fmt spdlog vicon-datastream-sdk)
 
@@ -51,11 +51,10 @@ target_include_directories(vicon_print_data PUBLIC
 
 
 ## Python Bindings
-#add_pybind11_module(solo12 srcpy/solo12.cpp
-#    LINK_LIBRARIES 
-#        solo12_driver
-#        solo12_pybullet_driver
-#)
+add_pybind11_module(${PROJECT_NAME}_bindings srcpy/bindings.cpp
+    LINK_LIBRARIES 
+        vicon_receiver
+)
 
 
 install(DIRECTORY include/ DESTINATION include)

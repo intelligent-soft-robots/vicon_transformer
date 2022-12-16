@@ -11,6 +11,7 @@ module = [
     "tf2_ros.*",
     "vicon_dssdk",
     "zmq",
+    "vicon_transformer.vicon_transformer_bindings",
 ]
 ignore_missing_imports = true
 
