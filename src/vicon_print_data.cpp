@@ -36,10 +36,9 @@
 
 #include <fmt/format.h>
 #include <fmt/ostream.h>
-
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
-
+#include <cereal/archives/json.hpp>
 #include <vicon_transformer/errors.hpp>
 #include <vicon_transformer/vicon_receiver.hpp>
 
@@ -66,6 +65,7 @@ int main(int argc, char* argv[])
 
     vicon_transformer::ViconReceiverConfig config;
     bool only_once = false;
+    bool json_output = false;
     std::vector<std::string> filtered_subjects;
 
     for (int a = arg_num; a < argc; ++a)
@@ -80,6 +80,7 @@ int main(int argc, char* argv[])
                 " --lightweight\n"
                 " --subjects <subject name> [<subject name> ...]\n"
                 " --once\n",
+                " --json\n",
                 argv[0]);
             return 0;
         }
@@ -106,6 +107,10 @@ int main(int argc, char* argv[])
         {
             only_once = true;
         }
+        else if (arg == "--json")
+        {
+            json_output = true;
+        }
         else
         {
             fmt::print(
@@ -126,7 +131,16 @@ int main(int argc, char* argv[])
     {
         vicon_transformer::ViconFrame frame = receiver.read();
         receiver.print_latency_info();
-        fmt::print("{}\n\n", frame);
+
+        if (json_output)
+        {
+            cereal::JSONOutputArchive json_out(std::cout);
+            frame.serialize(json_out);
+        }
+        else
+        {
+            fmt::print("{}\n\n", frame);
+        }
 
         if (only_once)
         {
