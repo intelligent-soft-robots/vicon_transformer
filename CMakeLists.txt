@@ -43,11 +43,11 @@ target_link_libraries(vicon_receiver
 )
 
 
-add_executable(vicon_print_data src/vicon_print_data.cpp)
-target_link_libraries(vicon_print_data
+add_executable(vicon_print_data_cpp src/vicon_print_data.cpp)
+target_link_libraries(vicon_print_data_cpp
     vicon_receiver
 )
-target_include_directories(vicon_print_data PUBLIC
+target_include_directories(vicon_print_data_cpp PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
@@ -65,7 +65,7 @@ install(DIRECTORY include/ DESTINATION include)
 install(
     TARGETS
         vicon_receiver
-        vicon_print_data
+        vicon_print_data_cpp
     EXPORT export_${PROJECT_NAME}
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
