@@ -70,11 +70,11 @@ install(
     INCLUDES DESTINATION include
 )
 
-#install_scripts(
-#    scripts/example.py
-#
-#    DESTINATION lib/${PROJECT_NAME}
-#)
+install_scripts(
+    scripts/vicon_print_data.py
+
+    DESTINATION lib/${PROJECT_NAME}
+)
 
 
 if(BUILD_TESTING)
