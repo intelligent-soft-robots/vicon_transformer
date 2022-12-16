@@ -11,11 +11,37 @@
 #include <vicon-datastream-sdk/DataStreamClient.h>
 #include <cereal/cereal.hpp>
 #include <cereal/types/array.hpp>
-#include <cereal/types/string.hpp>
 #include <cereal/types/map.hpp>
+#include <cereal/types/string.hpp>
+
+#include <cereal/archives/json.hpp>
 
 namespace vicon_transformer
 {
+// TODO: move to a more appropriate place (maybe serialization_utils?)
+template <typename T>
+std::string to_json(T& obj)
+{
+    std::stringstream stream;
+    {
+        cereal::JSONOutputArchive json_out(stream);
+        obj.serialize(json_out);
+    }
+    return stream.str();
+}
+
+template <typename T>
+T from_json(const std::string& json_str)
+{
+    T obj;
+    std::stringstream stream(json_str);
+    {
+        cereal::JSONInputArchive json_in(stream);
+        obj.serialize(json_in);
+    }
+    return obj;
+}
+
 struct SubjectData
 {
     bool is_visible;

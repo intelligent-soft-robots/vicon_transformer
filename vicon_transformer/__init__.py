@@ -8,6 +8,8 @@ from .vicon_transformer_bindings import (
     ViconFrame,
     ViconReceiver as _ViconReceiver,
     ViconReceiverConfig,
+    to_json,
+    from_json,
 )
 
 __version__ = "1.0.0"
@@ -33,4 +35,6 @@ __all__ = (
     "ViconFrame",
     "ViconReceiverConfig",
     "ViconReceiver",
+    "to_json",
+    "from_json",
 )

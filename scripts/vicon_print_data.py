@@ -3,7 +3,7 @@
 import argparse
 import sys
 
-from vicon_transformer import ViconReceiverConfig, ViconReceiver
+from vicon_transformer import ViconReceiverConfig, ViconReceiver, to_json
 
 
 def main():
@@ -32,10 +32,15 @@ def main():
     parser.add_argument(
         "--once", action="store_true", help="Exit after printing one frame."
     )
+    parser.add_argument(
+        "--json", action="store_true", help="Print output in JSON format."
+    )
     args = parser.parse_args()
 
     config = ViconReceiverConfig()
     config.enable_lightweight = args.lightweight
+
+    print("Config:\n{}\n".format(to_json(config)))
 
     with ViconReceiver(args.vicon_host, config) as receiver:
         if args.subjects:
@@ -48,7 +53,11 @@ def main():
         while True:
             frame = receiver.read()
             receiver.print_latency_info()
-            print(frame)
+
+            if args.json:
+                print(to_json(frame))
+            else:
+                print(frame)
 
             if args.once:
                 break

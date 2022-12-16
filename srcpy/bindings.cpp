@@ -28,6 +28,8 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
         .def_readwrite("global_rotation_quaternion",
                        &vt::SubjectData::global_rotation_quaternion)
         .def_readwrite("quality", &vt::SubjectData::quality);
+    m.def("to_json", &vt::to_json<vt::SubjectData>);
+    m.def("from_json", &vt::from_json<vt::SubjectData>);
 
     py::class_<vt::ViconFrame>(m, "ViconFrame")
         .def(py::init<>())
@@ -45,12 +47,16 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
                 return stream.str();
             },
             py::call_guard<py::gil_scoped_release>());
+    m.def("to_json", &vt::to_json<vt::ViconFrame>);
+    m.def("from_json", &vt::from_json<vt::ViconFrame>);
 
     py::class_<vt::ViconReceiverConfig>(m, "ViconReceiverConfig")
         .def(py::init<>())
         .def_readwrite("enable_lightweight",
                        &vt::ViconReceiverConfig::enable_lightweight)
         .def_readwrite("buffer_size", &vt::ViconReceiverConfig::buffer_size);
+    m.def("to_json", &vt::to_json<vt::ViconReceiverConfig>);
+    m.def("from_json", &vt::from_json<vt::ViconReceiverConfig>);
 
     py::class_<vt::ViconReceiver>(m, "ViconReceiver")
         .def(py::init<std::string, vt::ViconReceiverConfig>(),
