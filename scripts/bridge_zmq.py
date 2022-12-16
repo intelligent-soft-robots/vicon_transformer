@@ -45,13 +45,12 @@ def main():
     logging.basicConfig(level=logging.INFO)
 
     config = ViconReceiverConfig()
-    receiver = ViconReceiver(args.vicon_host, config)
 
-    # TODO: simple wrapper around ViconReceiver with context manager?
-    receiver.connect()
-    receiver.print_info()
+    with ViconReceiver(
+        args.vicon_host, config
+    ) as receiver, zmq.Context() as context, context.socket(zmq.PUB) as socket:
+        receiver.print_info()
 
-    with zmq.Context() as context, context.socket(zmq.PUB) as socket:
         logging.info("Publish to %s", args.zmq_address)
         socket.bind(args.zmq_address)
 

@@ -6,11 +6,22 @@ from .vicon_transformer_bindings import (
     NotConnectedError,
     SubjectData,
     ViconFrame,
-    ViconReceiver,
+    ViconReceiver as _ViconReceiver,
     ViconReceiverConfig,
 )
 
 __version__ = "1.0.0"
+
+
+# extend ViconReceiver from bindings with enter/exit methods
+class ViconReceiver(_ViconReceiver):
+    def __enter__(self):
+        self.connect()
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        self.disconnect()
+
 
 __all__ = (
     "ViconJsonZmq",

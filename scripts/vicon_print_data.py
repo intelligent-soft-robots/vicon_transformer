@@ -36,24 +36,22 @@ def main():
 
     config = ViconReceiverConfig()
     config.enable_lightweight = args.lightweight
-    receiver = ViconReceiver(args.vicon_host, config)
 
-    # TODO: simple wrapper around ViconReceiver with context manager?
-    receiver.connect()
-    if args.subjects:
-        receiver.filter_subjects(args.subjects)
+    with ViconReceiver(args.vicon_host, config) as receiver:
+        if args.subjects:
+            receiver.filter_subjects(args.subjects)
 
-    receiver.print_info()
+        receiver.print_info()
 
-    print("=======================================")
+        print("=======================================")
 
-    while True:
-        frame = receiver.read()
-        receiver.print_latency_info()
-        print(frame)
+        while True:
+            frame = receiver.read()
+            receiver.print_latency_info()
+            print(frame)
 
-        if args.once:
-            break
+            if args.once:
+                break
 
     return 0
 
