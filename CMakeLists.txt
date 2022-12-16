@@ -71,6 +71,7 @@ install(
 )
 
 install_scripts(
+    scripts/bridge_zmq.py
     scripts/vicon_print_data.py
 
     DESTINATION lib/${PROJECT_NAME}
