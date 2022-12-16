@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Receive JSON date via ZMQ and print to terminal."""
 import argparse
 import json
 import logging
