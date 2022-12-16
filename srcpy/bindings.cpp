@@ -36,13 +36,15 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
         .def_readwrite("latency", &vt::ViconFrame::latency)
         .def_readwrite("time_stamp", &vt::ViconFrame::time_stamp)
         .def_readwrite("subjects", &vt::ViconFrame::subjects)
-        .def("__str__",
-             [](const vt::ViconFrame& vf)
-             {
-                 std::stringstream stream;
-                 stream << vf;
-                 return stream.str();
-             });
+        .def(
+            "__str__",
+            [](const vt::ViconFrame& vf)
+            {
+                std::stringstream stream;
+                stream << vf;
+                return stream.str();
+            },
+            py::call_guard<py::gil_scoped_release>());
 
     py::class_<vt::ViconReceiverConfig>(m, "ViconReceiverConfig")
         .def(py::init<>())
@@ -53,12 +55,27 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
     py::class_<vt::ViconReceiver>(m, "ViconReceiver")
         .def(py::init<std::string, vt::ViconReceiverConfig>(),
              py::arg("host_name"),
-             py::arg("config"))
-        .def("is_connected", &vt::ViconReceiver::is_connected)
-        .def("connect", &vt::ViconReceiver::connect)
-        .def("disconnect", &vt::ViconReceiver::disconnect)
-        .def("read", &vt::ViconReceiver::read)
-        .def("print_info", &vt::ViconReceiver::print_info)
-        .def("print_latency_info", &vt::ViconReceiver::print_latency_info)
-        .def("filter_subjects", &vt::ViconReceiver::filter_subjects);
+             py::arg("config"),
+             py::call_guard<py::gil_scoped_release>())
+        .def("is_connected",
+             &vt::ViconReceiver::is_connected,
+             py::call_guard<py::gil_scoped_release>())
+        .def("connect",
+             &vt::ViconReceiver::connect,
+             py::call_guard<py::gil_scoped_release>())
+        .def("disconnect",
+             &vt::ViconReceiver::disconnect,
+             py::call_guard<py::gil_scoped_release>())
+        .def("read",
+             &vt::ViconReceiver::read,
+             py::call_guard<py::gil_scoped_release>())
+        .def("print_info",
+             &vt::ViconReceiver::print_info,
+             py::call_guard<py::gil_scoped_release>())
+        .def("print_latency_info",
+             &vt::ViconReceiver::print_latency_info,
+             py::call_guard<py::gil_scoped_release>())
+        .def("filter_subjects",
+             &vt::ViconReceiver::filter_subjects,
+             py::call_guard<py::gil_scoped_release>());
 }
