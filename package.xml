@@ -20,6 +20,8 @@ schematypens="http://www.w3.org/2001/XMLSchema"?>
     <build_depend>pybind11</build_depend>
     <build_depend>mpi_cmake_modules</build_depend>
 
+    <depend>cereal</depend>
+
     <test_depend>ament_cmake_pytest</test_depend>
 
     <export>

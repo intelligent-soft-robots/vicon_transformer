@@ -9,6 +9,10 @@
 
 #include <spdlog/logger.h>
 #include <vicon-datastream-sdk/DataStreamClient.h>
+#include <cereal/cereal.hpp>
+#include <cereal/types/array.hpp>
+#include <cereal/types/string.hpp>
+#include <cereal/types/map.hpp>
 
 namespace vicon_transformer
 {
@@ -18,6 +22,15 @@ struct SubjectData
     std::array<double, 3> global_translation;
     std::array<double, 4> global_rotation_quaternion;
     double quality;
+
+    template <class Archive>
+    void serialize(Archive& archive)
+    {
+        archive(CEREAL_NVP(is_visible),
+                CEREAL_NVP(global_translation),
+                CEREAL_NVP(global_rotation_quaternion),
+                CEREAL_NVP(quality));
+    }
 };
 
 struct ViconFrame
@@ -31,12 +44,28 @@ struct ViconFrame
     std::map<std::string, SubjectData> subjects;
 
     friend std::ostream& operator<<(std::ostream& os, const ViconFrame& vf);
+
+    template <class Archive>
+    void serialize(Archive& archive)
+    {
+        archive(CEREAL_NVP(frame_number),
+                CEREAL_NVP(frame_rate),
+                CEREAL_NVP(latency),
+                CEREAL_NVP(time_stamp),
+                CEREAL_NVP(subjects));
+    }
 };
 
 struct ViconReceiverConfig
 {
     bool enable_lightweight = false;
     unsigned int buffer_size = 0;
+
+    template <class Archive>
+    void serialize(Archive& archive)
+    {
+        archive(CEREAL_NVP(enable_lightweight), CEREAL_NVP(buffer_size));
+    }
 };
 
 class ViconReceiver

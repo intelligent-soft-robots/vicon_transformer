@@ -14,12 +14,14 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(pybind11 REQUIRED)
+# add mpi_cmake_modules first as it provides FindX-files for some libraries
+find_package(mpi_cmake_modules REQUIRED)
+
+find_package(cereal REQUIRED)
 find_package(fmt REQUIRED)
+find_package(pybind11 REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(vicon-datastream-sdk REQUIRED)
-
-find_package(mpi_cmake_modules REQUIRED)
 
 ament_export_dependencies(fmt spdlog vicon-datastream-sdk)
 
@@ -34,6 +36,7 @@ target_include_directories(vicon_receiver PUBLIC
     $<INSTALL_INTERFACE:include>
 )
 target_link_libraries(vicon_receiver
+    cereal::cereal
     fmt::fmt
     spdlog::spdlog
     vicon-datastream-sdk::ViconDataStreamSDK_CPP
