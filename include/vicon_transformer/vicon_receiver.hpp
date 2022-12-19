@@ -84,6 +84,13 @@ struct ViconFrame
     template <class Archive>
     void serialize(Archive& archive)
     {
+        int format_version = 3;
+        archive(CEREAL_NVP(format_version));
+        if (format_version != 3)
+        {
+            throw std::runtime_error("Invalid input format");
+        }
+
         archive(CEREAL_NVP(frame_number),
                 CEREAL_NVP(frame_rate),
                 CEREAL_NVP(latency),
