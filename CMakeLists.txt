@@ -12,6 +12,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+include(GNUInstallDirs)
+
 # find dependencies
 find_package(ament_cmake REQUIRED)
 # add mpi_cmake_modules first as it provides FindX-files for some libraries
@@ -107,6 +109,10 @@ if(BUILD_TESTING)
     ament_add_pytest_test(test_vicon_json tests/test_vicon_json.py)
 
     # C++ tests
+    # install test files
+    install(DIRECTORY tests/data DESTINATION share/${PROJECT_NAME}/test_data)
+    set(TEST_DATA_FILE_DIR "\"${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/test_data/data\"")
+
     ament_add_gtest(test_transform_cpp
       tests/test_transform.cpp
       src/transform.cpp
@@ -116,6 +122,17 @@ if(BUILD_TESTING)
         Eigen3::Eigen
     )
     install(TARGETS test_transform_cpp DESTINATION lib/${PROJECT_NAME})
+
+    ament_add_gtest(test_vicon_receiver
+      tests/test_vicon_receiver.cpp
+    )
+    target_include_directories(test_vicon_receiver PRIVATE include)
+    target_link_libraries(test_vicon_receiver vicon_receiver)
+    target_compile_definitions(test_vicon_receiver PRIVATE
+        TEST_DATA_FILE_DIR=${TEST_DATA_FILE_DIR})
+    install(TARGETS test_vicon_receiver DESTINATION lib/${PROJECT_NAME})
+
+
 endif()
 
 

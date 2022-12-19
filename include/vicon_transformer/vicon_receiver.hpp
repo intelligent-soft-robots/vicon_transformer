@@ -5,16 +5,16 @@
 #pragma once
 
 #include <array>
+#include <filesystem>
 #include <map>
 
 #include <spdlog/logger.h>
 #include <vicon-datastream-sdk/DataStreamClient.h>
+#include <cereal/archives/json.hpp>
 #include <cereal/cereal.hpp>
 #include <cereal/types/array.hpp>
 #include <cereal/types/map.hpp>
 #include <cereal/types/string.hpp>
-
-#include <cereal/archives/json.hpp>
 
 namespace vicon_transformer
 {
@@ -111,7 +111,13 @@ struct ViconReceiverConfig
     }
 };
 
-class ViconReceiver
+class BaseReceiver
+{
+public:
+    virtual ViconFrame read() = 0;
+};
+
+class ViconReceiver : public BaseReceiver
 {
 public:
     ViconReceiver(const std::string& host_name,
@@ -128,7 +134,7 @@ public:
 
     void print_info() const;
 
-    ViconFrame read();
+    ViconFrame read() override;
 
     void print_latency_info() const;
 
@@ -142,5 +148,20 @@ private:
     const ViconReceiverConfig config_;
 
     void client_get_frame();
+};
+
+/**
+ * @brief Load a single frame from a JSON file and return it on every read()
+ * call. Meant for testing.
+ */
+class JsonReceiver : public BaseReceiver
+{
+public:
+    JsonReceiver(const std::filesystem::path& filename);
+
+    ViconFrame read() override;
+
+private:
+    ViconFrame frame_;
 };
 }  // namespace vicon_transformer

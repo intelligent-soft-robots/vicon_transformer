@@ -1,10 +1,11 @@
 #include <vicon_transformer/vicon_receiver.hpp>
 
 #include <unistd.h>
+#include <fstream>
 
 #include <fmt/format.h>
-#include <fmt/ranges.h>
 #include <fmt/ostream.h>
+#include <fmt/ranges.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
 #include <vicon_transformer/errors.hpp>
@@ -275,5 +276,21 @@ void ViconReceiver::client_get_frame()
         default:
             throw BadResultError(result);
     }
+}
+
+JsonReceiver::JsonReceiver(const std::filesystem::path& filename)
+{
+    std::ifstream file(filename);
+    if (!file.is_open())
+    {
+        throw std::runtime_error(
+            fmt::format("Failed to open file {}", filename));
+    }
+    frame_ = from_json_stream<ViconFrame>(file);
+}
+
+ViconFrame JsonReceiver::read()
+{
+    return frame_;
 }
 }  // namespace vicon_transformer

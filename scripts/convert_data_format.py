@@ -44,6 +44,29 @@ def convert_record_1to2(
     return record
 
 
+def convert_record_2to3(
+    record: typing.Dict[str, typing.Any]
+) -> typing.Dict[str, typing.Any]:
+    del record["my_frame_number"]
+    del record["on_time"]
+
+    def cvt_subject(sd):
+        sd["is_visible"] = not sd["global_translation"][1]
+        sd["global_translation"] = sd["global_translation"][0]
+        sd["global_rotation_quaternion"] = sd["global_rotation"]["quaternion"][0]
+        del sd["global_rotation"]
+        return sd
+
+    record["subjects"] = [
+        {"key": name, "value": cvt_subject(data)}
+        for name, data in record["subjects"].items()
+    ]
+
+    record["format_version"] = 3
+
+    return record
+
+
 def main() -> int:
     logging.basicConfig(level=logging.INFO)
 
@@ -82,6 +105,8 @@ def main() -> int:
         if "format_version" not in record:
             record = convert_record_1to2(record)
         elif record["format_version"] == 2:
+            record = convert_record_2to3(record)
+        elif record["format_version"] == 3:
             logging.info("File is already in the latest format.")
         else:
             logging.fatal("Unexpected format version %s", record["format_version"])
