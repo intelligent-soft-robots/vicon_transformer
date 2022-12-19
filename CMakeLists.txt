@@ -46,6 +46,19 @@ target_link_libraries(vicon_receiver
 )
 
 
+add_library(vicon_transformer
+    src/vicon_transformer.cpp
+)
+target_include_directories(vicon_transformer PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+target_link_libraries(vicon_transformer
+    spdlog::spdlog
+    vicon_receiver
+)
+
+
 add_executable(vicon_print_data_cpp src/vicon_print_data.cpp)
 target_link_libraries(vicon_print_data_cpp
     vicon_receiver
@@ -68,6 +81,7 @@ install(DIRECTORY include/ DESTINATION include)
 install(
     TARGETS
         vicon_receiver
+        vicon_transformer
         vicon_print_data_cpp
     EXPORT export_${PROJECT_NAME}
     LIBRARY DESTINATION lib
