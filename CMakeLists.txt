@@ -18,6 +18,7 @@ find_package(ament_cmake REQUIRED)
 find_package(mpi_cmake_modules REQUIRED)
 
 find_package(cereal REQUIRED)
+find_package(Eigen3 REQUIRED)
 find_package(fmt REQUIRED)
 find_package(pybind11 REQUIRED)
 find_package(spdlog REQUIRED)
@@ -30,6 +31,7 @@ ament_python_install_package(${PROJECT_NAME} PACKAGE_DIR ${PROJECT_NAME})
 
 add_library(vicon_receiver
     src/vicon_receiver.cpp
+    src/transform.cpp
 )
 target_include_directories(vicon_receiver PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -37,6 +39,7 @@ target_include_directories(vicon_receiver PUBLIC
 )
 target_link_libraries(vicon_receiver
     cereal::cereal
+    Eigen3::Eigen
     fmt::fmt
     spdlog::spdlog
     vicon-datastream-sdk::ViconDataStreamSDK_CPP
@@ -83,10 +86,22 @@ install_scripts(
 
 if(BUILD_TESTING)
     find_package(ament_cmake_pytest REQUIRED)
+    find_package(ament_cmake_gtest REQUIRED)
 
     # Python tests
     ament_add_pytest_test(test_transform tests/test_transform.py)
     ament_add_pytest_test(test_vicon_json tests/test_vicon_json.py)
+
+    # C++ tests
+    ament_add_gtest(test_transform_cpp
+      tests/test_transform.cpp
+      src/transform.cpp
+    )
+    target_include_directories(test_transform_cpp PRIVATE include)
+    target_link_libraries(test_transform_cpp
+        Eigen3::Eigen
+    )
+    install(TARGETS test_transform_cpp DESTINATION lib/${PROJECT_NAME})
 endif()
 
 
