@@ -20,26 +20,36 @@ namespace vicon_transformer
 {
 // TODO: move to a more appropriate place (maybe serialization_utils?)
 template <typename T>
+void to_json_stream(T& obj, std::ostream& stream)
+{
+    cereal::JSONOutputArchive json_out(stream);
+    obj.serialize(json_out);
+}
+
+template <typename T>
+T from_json_stream(std::istream& stream)
+{
+    T obj;
+    {
+        cereal::JSONInputArchive json_in(stream);
+        obj.serialize(json_in);
+    }
+    return obj;
+}
+
+template <typename T>
 std::string to_json(T& obj)
 {
     std::stringstream stream;
-    {
-        cereal::JSONOutputArchive json_out(stream);
-        obj.serialize(json_out);
-    }
+    to_json_stream(obj, stream);
     return stream.str();
 }
 
 template <typename T>
 T from_json(const std::string& json_str)
 {
-    T obj;
     std::stringstream stream(json_str);
-    {
-        cereal::JSONInputArchive json_in(stream);
-        obj.serialize(json_in);
-    }
-    return obj;
+    return from_json_stream<T>(stream);
 }
 
 struct SubjectData
