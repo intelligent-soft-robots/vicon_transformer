@@ -7,6 +7,7 @@
 #include <fmt/ostream.h>
 #include <fmt/ranges.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
 
 #include <vicon_transformer/errors.hpp>
 #include <vicon_transformer/fmt.hpp>
@@ -49,7 +50,11 @@ ViconReceiver::ViconReceiver(const std::string& host_name,
     }
     else
     {
-        log_ = spdlog::stderr_color_mt("ViconReceiver");
+        const std::string name = "ViconReceiver";
+        if (!(log_ = spdlog::get(name)))
+        {
+            log_ = spdlog::stderr_color_mt(name);
+        }
     }
 }
 

@@ -3,6 +3,8 @@
  */
 #include <vicon_transformer/vicon_transformer.hpp>
 
+#include <spdlog/spdlog.h>
+
 namespace vicon_transformer
 {
 ViconTransformerBase::ViconTransformerBase(
@@ -17,7 +19,11 @@ ViconTransformerBase::ViconTransformerBase(
     }
     else
     {
-        log_ = spdlog::stderr_color_mt("ViconTransformer");
+        const std::string name = "ViconTransformer";
+        if (!(log_ = spdlog::get(name)))
+        {
+            log_ = spdlog::stderr_color_mt(name);
+        }
     }
 }
 
