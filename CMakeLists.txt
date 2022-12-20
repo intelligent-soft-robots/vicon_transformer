@@ -65,10 +65,6 @@ add_executable(vicon_print_data_cpp src/vicon_print_data.cpp)
 target_link_libraries(vicon_print_data_cpp
     vicon_receiver
 )
-target_include_directories(vicon_print_data_cpp PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
-)
 
 
 ## Python Bindings
