@@ -66,6 +66,10 @@ target_link_libraries(vicon_print_data_cpp
     vicon_receiver
 )
 
+add_executable(vicon_record src/record.cpp)
+target_link_libraries(vicon_record
+    vicon_receiver
+)
 
 ## Python Bindings
 add_pybind11_module(${PROJECT_NAME}_bindings srcpy/bindings.cpp
@@ -81,6 +85,7 @@ install(
         vicon_receiver
         vicon_transformer
         vicon_print_data_cpp
+        vicon_record
     EXPORT export_${PROJECT_NAME}
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
