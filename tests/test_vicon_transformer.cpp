@@ -10,6 +10,7 @@
 #include <memory>
 
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 #include <vicon_transformer/vicon_receiver.hpp>
 #include <vicon_transformer/vicon_transformer.hpp>
@@ -36,7 +37,6 @@ std::shared_ptr<JsonReceiver> get_receiver()
 
 TEST(ViconTransformer, get_timestamp)
 {
-    // leave origin subject name empty, so not origin transform is done
     ViconTransformer vtf(get_receiver(), "");
     vtf.update();
 
@@ -45,7 +45,6 @@ TEST(ViconTransformer, get_timestamp)
 
 TEST(ViconTransformer, set_frame)
 {
-    // leave origin subject name empty, so not origin transform is done
     ViconTransformer vtf(get_receiver(), "");
     vtf.update();
 
@@ -78,6 +77,26 @@ TEST(ViconTransformer, get_raw_transforms)
         tf.translation,
         Eigen::Vector3d(
             -2.4118746572218347, .11181820474947762, .5197499656025113));
+}
+
+TEST(ViconTransformer, get_subject_names)
+{
+    ViconTransformer vtf(get_receiver(), "");
+    vtf.update();
+
+    auto names = vtf.get_subject_names();
+    std::vector<std::string> expected = {"Marker Ballmaschine",
+                                         "Marker_Arm",
+                                         "rll_led_stick",
+                                         "rll_muscle_base",
+                                         "rll_muscle_racket",
+                                         "rll_ping_base",
+                                         "TT Platte_Eckteil 1",
+                                         "TT Platte_Eckteil 2",
+                                         "TT Platte_Eckteil 3",
+                                         "TT Platte_Eckteil 4"};
+
+    ASSERT_THAT(names, testing::UnorderedElementsAreArray(expected));
 }
 
 int main(int argc, char **argv)

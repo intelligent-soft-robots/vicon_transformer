@@ -103,7 +103,7 @@ install_scripts(
 
 if(BUILD_TESTING)
     find_package(ament_cmake_pytest REQUIRED)
-    find_package(ament_cmake_gtest REQUIRED)
+    find_package(ament_cmake_gmock REQUIRED)
 
     # Python tests
     ament_add_pytest_test(test_transform tests/test_transform.py)
@@ -113,8 +113,9 @@ if(BUILD_TESTING)
     # install test files
     install(DIRECTORY tests/data DESTINATION share/${PROJECT_NAME}/test_data)
     set(TEST_DATA_FILE_DIR "\"${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/test_data/data\"")
+    # FIXME: use working_directory instead
 
-    ament_add_gtest(test_transform_cpp
+    ament_add_gmock(test_transform_cpp
         tests/test_transform.cpp
         src/transform.cpp
     )
@@ -123,18 +124,16 @@ if(BUILD_TESTING)
         Eigen3::Eigen
         fmt::fmt
     )
-    install(TARGETS test_transform_cpp DESTINATION lib/${PROJECT_NAME})
 
-    ament_add_gtest(test_vicon_receiver
+    ament_add_gmock(test_vicon_receiver
         tests/test_vicon_receiver.cpp
     )
     target_include_directories(test_vicon_receiver PRIVATE include)
     target_link_libraries(test_vicon_receiver vicon_receiver)
     target_compile_definitions(test_vicon_receiver PRIVATE
         TEST_DATA_FILE_DIR=${TEST_DATA_FILE_DIR})
-    install(TARGETS test_vicon_receiver DESTINATION lib/${PROJECT_NAME})
 
-    ament_add_gtest(test_vicon_transformer
+    ament_add_gmock(test_vicon_transformer
         tests/test_vicon_transformer.cpp
     )
     target_include_directories(test_vicon_transformer PRIVATE include)
@@ -144,7 +143,6 @@ if(BUILD_TESTING)
     )
     target_compile_definitions(test_vicon_transformer PRIVATE
         TEST_DATA_FILE_DIR=${TEST_DATA_FILE_DIR})
-    install(TARGETS test_vicon_transformer DESTINATION lib/${PROJECT_NAME})
 
 endif()
 
