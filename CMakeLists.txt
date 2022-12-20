@@ -114,17 +114,18 @@ if(BUILD_TESTING)
     set(TEST_DATA_FILE_DIR "\"${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/test_data/data\"")
 
     ament_add_gtest(test_transform_cpp
-      tests/test_transform.cpp
-      src/transform.cpp
+        tests/test_transform.cpp
+        src/transform.cpp
     )
     target_include_directories(test_transform_cpp PRIVATE include)
     target_link_libraries(test_transform_cpp
         Eigen3::Eigen
+        fmt::fmt
     )
     install(TARGETS test_transform_cpp DESTINATION lib/${PROJECT_NAME})
 
     ament_add_gtest(test_vicon_receiver
-      tests/test_vicon_receiver.cpp
+        tests/test_vicon_receiver.cpp
     )
     target_include_directories(test_vicon_receiver PRIVATE include)
     target_link_libraries(test_vicon_receiver vicon_receiver)
@@ -132,6 +133,17 @@ if(BUILD_TESTING)
         TEST_DATA_FILE_DIR=${TEST_DATA_FILE_DIR})
     install(TARGETS test_vicon_receiver DESTINATION lib/${PROJECT_NAME})
 
+    ament_add_gtest(test_vicon_transformer
+        tests/test_vicon_transformer.cpp
+    )
+    target_include_directories(test_vicon_transformer PRIVATE include)
+    target_link_libraries(test_vicon_transformer
+        vicon_transformer
+        fmt::fmt
+    )
+    target_compile_definitions(test_vicon_transformer PRIVATE
+        TEST_DATA_FILE_DIR=${TEST_DATA_FILE_DIR})
+    install(TARGETS test_vicon_transformer DESTINATION lib/${PROJECT_NAME})
 
 endif()
 
