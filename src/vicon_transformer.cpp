@@ -5,6 +5,8 @@
 
 #include <spdlog/spdlog.h>
 
+#include <vicon_transformer/errors.hpp>
+
 namespace vicon_transformer
 {
 ViconTransformerBase::ViconTransformerBase(
@@ -57,7 +59,14 @@ std::vector<std::string> ViconTransformerBase::get_subject_names() const
 
 bool ViconTransformerBase::is_visible(const std::string &subject_name) const
 {
-    return frame_.subjects.at(subject_name).is_visible;
+    try
+    {
+        return get_subject_data(subject_name).is_visible;
+    }
+    catch (const std::out_of_range &)
+    {
+        throw UnknownSubjectError(subject_name);
+    }
 }
 
 Transformation ViconTransformerBase::get_transform(
@@ -69,7 +78,12 @@ Transformation ViconTransformerBase::get_transform(
 Transformation ViconTransformerBase::get_raw_transform(
     const std::string &subject_name) const
 {
-    SubjectData sd = frame_.subjects.at(subject_name);
+    SubjectData sd = get_subject_data(subject_name);
+
+    if (!sd.is_visible)
+    {
+        throw SubjectNotVisibleError(subject_name);
+    }
 
     // NOTE: SubjectData provides quaternion in (x, y, z, w) format but Eigen
     // expected (w, x, y, z).
@@ -82,6 +96,19 @@ Transformation ViconTransformerBase::get_raw_transform(
         Eigen::Map<Eigen::Vector3d>(sd.global_translation.data()) / 1000;
 
     return Transformation(rotation, translation);
+}
+
+const SubjectData &ViconTransformerBase::get_subject_data(
+    const std::string &subject_name) const
+{
+    try
+    {
+        return frame_.subjects.at(subject_name);
+    }
+    catch (const std::out_of_range &)
+    {
+        throw UnknownSubjectError(subject_name);
+    }
 }
 
 }  // namespace vicon_transformer

@@ -40,6 +40,8 @@ protected:
     std::string origin_subject_name_;
     ViconFrame frame_;
     Transformation origin_tf_;
+
+    const SubjectData& get_subject_data(const std::string &subject_name) const;
 };
 
 template <typename Receiver>

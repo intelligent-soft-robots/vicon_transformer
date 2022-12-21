@@ -5,9 +5,10 @@
  */
 #include <memory>
 
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
+#include <vicon_transformer/errors.hpp>
 #include <vicon_transformer/vicon_receiver.hpp>
 #include <vicon_transformer/vicon_transformer.hpp>
 
@@ -106,6 +107,32 @@ TEST(ViconTransformer, is_visible)
     EXPECT_FALSE(vtf.is_visible("rll_led_stick"));
     EXPECT_FALSE(vtf.is_visible("rll_muscle_racket"));
 }
+
+TEST(ViconTransformer, unknown_subject_error)
+{
+    ViconTransformer vtf(get_receiver("frame_with_missing_subjects.json"), "");
+    vtf.update();
+
+    EXPECT_THROW(vtf.is_visible("foo"), vicon_transformer::UnknownSubjectError);
+    EXPECT_THROW(vtf.get_transform("foo"),
+                 vicon_transformer::UnknownSubjectError);
+    EXPECT_THROW(vtf.get_raw_transform("foo"),
+                 vicon_transformer::UnknownSubjectError);
+}
+
+TEST(ViconTransformer, subject_not_visible_error)
+{
+    ViconTransformer vtf(get_receiver("frame_with_missing_subjects.json"), "");
+    vtf.update();
+
+    EXPECT_FALSE(vtf.is_visible("rll_led_stick"));
+
+    EXPECT_THROW(vtf.get_transform("rll_led_stick"),
+                 vicon_transformer::SubjectNotVisibleError);
+    EXPECT_THROW(vtf.get_raw_transform("rll_led_stick"),
+                 vicon_transformer::SubjectNotVisibleError);
+}
+
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
