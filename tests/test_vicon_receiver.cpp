@@ -23,6 +23,14 @@ TEST(JsonReceiver, load_file)
     EXPECT_EQ(frame.frame_number, 408812);
 }
 
+TEST(JsonReceiver, file_not_found)
+{
+    // assumes test is executed in package root directory
+    std::string file = "tests/data/this_does_not_exist.json";
+
+    EXPECT_THROW({ JsonReceiver receiver(file); }, std::runtime_error);
+}
+
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
