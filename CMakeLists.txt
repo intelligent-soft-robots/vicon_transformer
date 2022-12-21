@@ -106,8 +106,10 @@ if(BUILD_TESTING)
     find_package(ament_cmake_gmock REQUIRED)
 
     # Python tests
-    ament_add_pytest_test(test_transform tests/test_transform.py)
-    ament_add_pytest_test(test_vicon_json tests/test_vicon_json.py)
+    ament_add_pytest_test(test_transform tests/test_transform.py
+        WORKING_DIRECTORY /tmp)
+    ament_add_pytest_test(test_vicon_json tests/test_vicon_json.py
+        WORKING_DIRECTORY /tmp)
 
     # C++ tests
     # install test files
