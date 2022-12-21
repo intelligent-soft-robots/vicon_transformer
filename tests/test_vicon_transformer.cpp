@@ -96,6 +96,16 @@ TEST(ViconTransformer, get_subject_names)
     ASSERT_THAT(names, testing::UnorderedElementsAreArray(expected));
 }
 
+TEST(ViconTransformer, is_visible)
+{
+    ViconTransformer vtf(get_receiver("frame_with_missing_subjects.json"), "");
+    vtf.update();
+
+    EXPECT_TRUE(vtf.is_visible("Marker Ballmaschine"));
+    EXPECT_TRUE(vtf.is_visible("Marker_Arm"));
+    EXPECT_FALSE(vtf.is_visible("rll_led_stick"));
+    EXPECT_FALSE(vtf.is_visible("rll_muscle_racket"));
+}
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
