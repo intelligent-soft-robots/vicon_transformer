@@ -37,7 +37,7 @@ void ViconTransformerBase::set_frame(const ViconFrame &frame)
     // beginning?
     if (!origin_subject_name_.empty())
     {
-        origin_tf_ = get_raw_transform(origin_subject_name_);
+        origin_tf_ = get_raw_transform(origin_subject_name_).inverse();
     }
 }
 
