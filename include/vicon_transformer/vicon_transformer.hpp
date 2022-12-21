@@ -32,7 +32,6 @@ public:
 
     Transformation get_transform(const std::string &subject_name) const;
 
-    // private?
     Transformation get_raw_transform(const std::string &subject_name) const;
 
 protected:
