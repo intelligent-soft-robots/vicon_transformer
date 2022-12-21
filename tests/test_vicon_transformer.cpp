@@ -133,6 +133,94 @@ TEST(ViconTransformer, subject_not_visible_error)
                  vicon_transformer::SubjectNotVisibleError);
 }
 
+TEST(ViconTransformer, origin_transform)
+{
+    // Load two different test frames of the same scene but with the Vicon
+    // origin at different locations.  By setting the desired origin to the ping
+    // marker, all objects should appear more or less at the same location
+    // nonetheless.
+
+    ViconTransformer vtf1(get_receiver("test_frame1.json"), "rll_ping_base");
+    ViconTransformer vtf2(get_receiver("test_frame2.json"), "rll_ping_base");
+    vtf1.update();
+    vtf2.update();
+
+    for (const std::string &subject_name : vtf1.get_subject_names())
+    {
+        // the marker of the Ballmaschine is not very good, better ignore it
+        // here
+        if (subject_name == "Marker Ballmaschine")
+        {
+            continue;
+        }
+
+        Transformation tf1 = vtf1.get_transform(subject_name);
+        Transformation tf2 = vtf2.get_transform(subject_name);
+
+        EXPECT_TRUE(tf1.translation.isApprox(tf2.translation, 2e-3));
+        EXPECT_LE(tf1.rotation.angularDistance(tf2.rotation), 0.02);
+    }
+}
+
+TEST(ViconTransformer, basic_transforms_with_ping_at_origin)
+{
+    ViconTransformer vtf(get_receiver("frame_ping_at_origin.json"),
+                         "rll_ping_base");
+    vtf.update();
+
+    Eigen::Matrix4d expected_rll_muscle_base, expected_corner_1;
+
+    expected_rll_muscle_base << 0.8663438846138151, 0.4993031329659253,
+        -0.012027260812682643, 1.0833450422755914,  //
+        0.49936305903567846, -0.8663894341721914, 0.002425618543688639,
+        0.5051439649956338,  //
+        -0.009209172751897504, -0.008107389542971665, -0.9999247278530641,
+        0.4685935179506591,  //
+        0.0, 0.0, 0.0, 1.0;
+
+    expected_corner_1 << 0.9447796559203805, -0.3274233104572087,
+        0.01361534164865755, -1.2825873210084287,  //
+        0.32746814862858703, 0.94486152759689, -0.0011424977185985471,
+        -1.1358202228673058,  //
+        -0.012490532123690789, 0.00553799932409894, 0.9999066542286601,
+        0.04067459816726638,  //
+        0.0, 0.0, 0.0, 1.0;
+
+    ASSERT_MATRIX_ALMOST_EQUAL(vtf.get_transform("rll_muscle_base").matrix(),
+                               expected_rll_muscle_base);
+    ASSERT_MATRIX_ALMOST_EQUAL(
+        vtf.get_transform("TT Platte_Eckteil 1").matrix(), expected_corner_1);
+}
+
+TEST(ViconTransformer, basic_transforms_with_ping_translated)
+{
+    ViconTransformer vtf(get_receiver("frame_ping_simple_translation.json"),
+                         "rll_ping_base");
+    vtf.update();
+
+    Eigen::Matrix4d expected_rll_muscle_base, expected_corner_1;
+
+    expected_rll_muscle_base << 0.8663438846138151, 0.4993031329659253,
+        -0.012027260812682643, 83.3450422755914 / 1000,  //
+        0.49936305903567846, -0.8663894341721914, 0.002425618543688639,
+        480.1439649956338 / 1000,  //
+        -0.009209172751897504, -0.008107389542971665, -0.9999247278530641,
+        471.5935179506591 / 1000,  //
+        0.0, 0.0, 0.0, 1.0;
+
+    expected_corner_1 << 0.9447796559203805, -0.3274233104572087,
+        0.01361534164865755, -2282.5873210084287 / 1000,  //
+        0.32746814862858703, 0.94486152759689, -0.0011424977185985471,
+        -1160.8202228673058 / 1000,  //
+        -0.012490532123690789, 0.00553799932409894, 0.9999066542286601,
+        43.67459816726638 / 1000,  //
+        0.0, 0.0, 0.0, 1.0;
+
+    ASSERT_MATRIX_ALMOST_EQUAL(vtf.get_transform("rll_muscle_base").matrix(),
+                               expected_rll_muscle_base);
+    ASSERT_MATRIX_ALMOST_EQUAL(
+        vtf.get_transform("TT Platte_Eckteil 1").matrix(), expected_corner_1);
+}
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
