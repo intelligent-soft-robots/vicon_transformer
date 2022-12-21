@@ -112,11 +112,6 @@ if(BUILD_TESTING)
         WORKING_DIRECTORY /tmp)
 
     # C++ tests
-    # install test files
-    install(DIRECTORY tests/data DESTINATION share/${PROJECT_NAME}/test_data)
-    set(TEST_DATA_FILE_DIR "\"${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/test_data/data\"")
-    # FIXME: use working_directory instead
-
     ament_add_gmock(test_transform_cpp
         tests/test_transform.cpp
         src/transform.cpp

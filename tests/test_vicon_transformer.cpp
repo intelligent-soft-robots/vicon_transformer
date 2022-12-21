@@ -3,10 +3,6 @@
  * @brief Tests for vicon_transformer.hpp
  * @copyright 2022, Max Planck Gesellschaft.  All rights reserved.
  */
-#ifndef TEST_DATA_FILE_DIR
-#error TEST_DATA_FILE_DIR is not defined
-#endif
-
 #include <memory>
 
 #include <gtest/gtest.h>
@@ -26,8 +22,9 @@ namespace
 {
 std::shared_ptr<JsonReceiver> get_receiver()
 {
-    std::string file =
-        std::string(TEST_DATA_FILE_DIR) + "/test_frame1_format3.json";
+    // assumes test is executed in package root directory
+    std::string file = "tests/data/test_frame1_format3.json";
+
     std::shared_ptr<JsonReceiver> receiver =
         std::make_shared<JsonReceiver>(file);
 
