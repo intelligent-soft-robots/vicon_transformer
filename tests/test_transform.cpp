@@ -23,7 +23,7 @@ TEST(TestTransformation, initialisation)
 {
     Eigen::Quaterniond rot(0.95145453, 0.0948712, 0.29247034, -0.01395812);
     Eigen::Vector3d trans(2.1, -0.2, 0.0);
-    auto tf = Transformation( rot, trans);
+    auto tf = Transformation(rot, trans);
 
     ASSERT_QUATERNION_ALMOST_EQUAL(tf.rotation, rot);
     ASSERT_MATRIX_ALMOST_EQUAL(tf.translation, trans);
