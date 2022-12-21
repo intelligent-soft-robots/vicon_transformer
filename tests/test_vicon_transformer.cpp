@@ -23,7 +23,7 @@ namespace
 std::shared_ptr<JsonReceiver> get_receiver()
 {
     // assumes test is executed in package root directory
-    std::string file = "tests/data/test_frame1_format3.json";
+    std::string file = "tests/data/test_frame1.json";
 
     std::shared_ptr<JsonReceiver> receiver =
         std::make_shared<JsonReceiver>(file);
