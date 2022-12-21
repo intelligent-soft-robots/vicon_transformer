@@ -20,10 +20,10 @@ using vicon_transformer::ViconTransformer;
 
 namespace
 {
-std::shared_ptr<JsonReceiver> get_receiver()
+std::shared_ptr<JsonReceiver> get_receiver(const std::string &test_file)
 {
     // assumes test is executed in package root directory
-    std::string file = "tests/data/test_frame1.json";
+    std::string file = "tests/data/" + test_file;
 
     std::shared_ptr<JsonReceiver> receiver =
         std::make_shared<JsonReceiver>(file);
@@ -34,7 +34,7 @@ std::shared_ptr<JsonReceiver> get_receiver()
 
 TEST(ViconTransformer, get_timestamp)
 {
-    ViconTransformer vtf(get_receiver(), "");
+    ViconTransformer vtf(get_receiver("test_frame1.json"), "");
     vtf.update();
 
     ASSERT_EQ(vtf.get_timestamp_ns(), 1638538681615901200);
@@ -42,7 +42,7 @@ TEST(ViconTransformer, get_timestamp)
 
 TEST(ViconTransformer, set_frame)
 {
-    ViconTransformer vtf(get_receiver(), "");
+    ViconTransformer vtf(get_receiver("test_frame1.json"), "");
     vtf.update();
 
     // get the original frame from the receiver, modify it and set it back
@@ -56,7 +56,7 @@ TEST(ViconTransformer, set_frame)
 TEST(ViconTransformer, get_raw_transforms)
 {
     // leave origin subject name empty, so not origin transform is done
-    ViconTransformer vtf(get_receiver(), "");
+    ViconTransformer vtf(get_receiver("test_frame1.json"), "");
     vtf.update();
 
     Transformation tf_raw = vtf.get_raw_transform("Marker Ballmaschine");
@@ -78,7 +78,7 @@ TEST(ViconTransformer, get_raw_transforms)
 
 TEST(ViconTransformer, get_subject_names)
 {
-    ViconTransformer vtf(get_receiver(), "");
+    ViconTransformer vtf(get_receiver("test_frame1.json"), "");
     vtf.update();
 
     auto names = vtf.get_subject_names();
