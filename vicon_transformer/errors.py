@@ -1,9 +1,18 @@
 """Custom exceptions of vicon_transformer."""
 
 
-class NotConnectedError(Exception):
+class ViconTransformerError(Exception):
+    """Base error for custom errors of this package."""
     pass
 
 
-class ConnectionFailedError(Exception):
+class NotConnectedError(ViconTransformerError):
+    pass
+
+
+class ConnectionFailedError(ViconTransformerError):
+    pass
+
+
+class SubjectNotPresentError(ViconTransformerError):
     pass

@@ -4,11 +4,17 @@ import numpy as np
 import pytest
 
 from vicon_transformer import ViconJsonFile
+from vicon_transformer.errors import SubjectNotPresentError
 
 
 @pytest.fixture
 def test_data():
     return pathlib.PurePath(__file__).parent / "data"
+
+
+def test_timestamp(test_data) -> None:
+    vicon = ViconJsonFile(test_data / "test_frame1.json")
+    assert vicon.get_timestamp() == 1638538681.615901200
 
 
 def test_origin_init(test_data) -> None:
@@ -335,3 +341,10 @@ def test_get_robot_shoulder_T(test_data) -> None:
             [0.0, 0.0, 0.0, 1.0],
         ],
     )
+
+
+def test_subject_not_present(test_data) -> None:
+    vicon = ViconJsonFile(test_data / "frame_with_missing_subjects.json")
+
+    with pytest.raises(SubjectNotPresentError, match="rll_muscle_racket"):
+        vicon.get_T("rll_muscle_racket")

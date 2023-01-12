@@ -4,6 +4,7 @@ import typing
 
 import numpy as np
 
+from . import errors
 from .receiver import ZmqJsonReceiver
 from .transform import Transformation, Rotation
 
@@ -51,7 +52,8 @@ class ViconJsonBase:
         t_rob_origin = self.get_robot_base_T().translation
         print(t_rob_origin)
 
-    # get object rotations and translations
+    def get_timestamp(self) -> float:
+        return self.json_obj["time_stamp"] / 1e9
 
     def get_robot_rot(self):
         # TODO
@@ -104,9 +106,12 @@ class ViconJsonBase:
 
     # access json methods
     def get_T(self, subject_name: str) -> Transformation:
-        # Returns homogenous transformation in origin frame
-
+        """Returns homogeneous transformation in origin frame."""
         subject_data = self.json_obj["subjects"][subject_name]
+
+        if subject_data["quality"] == "Not present":
+            raise errors.SubjectNotPresentError(subject_name)
+
         translation = 1e-3 * np.asarray(subject_data["global_translation"][0])
         rotation = Rotation(subject_data["global_rotation"]["quaternion"][0])
         tf = Transformation(rotation, translation)
@@ -117,13 +122,12 @@ class ViconJsonBase:
 class ViconJsonZmq(ViconJsonBase):
     def __init__(
         self,
-        ip="10.42.2.29",
-        port="5555",
+        address="tcp://10.42.2.29:5555",  # TODO: do not use this as default here
         timeout_in_ms=5000,
     ):
         super().__init__()
 
-        self.receiver = ZmqJsonReceiver(f"tcp://{ip}:{port}", timeout_in_ms)
+        self.receiver = ZmqJsonReceiver(address, timeout_in_ms)
         self.receiver.connect()
         self.json_obj = self.read()
         self.log.info("Vicon connected via zmq")

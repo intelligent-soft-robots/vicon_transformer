@@ -13,6 +13,10 @@ schematypens="http://www.w3.org/2001/XMLSchema"?>
 
     <buildtool_depend>ament_python</buildtool_depend>
 
+    <exec_depend>rclpy</exec_depend>
+    <exec_depend>tf2_ros</exec_depend>
+    <exec_depend>geometry_msgs</exec_depend>
+
     <export>
         <build_type>ament_python</build_type>
     </export>
