@@ -53,20 +53,20 @@ def test_origin_init(test_data):
     vT1 = ViconJsonFile(test_data / "test_frame1.json")
     vT2 = ViconJsonFile(test_data / "test_frame2.json")
 
-    for key in vT1.json_obj["subjectNames"]:
+    for name in vT1.get_subject_names():
         # the marker of the Ballmaschine is not very good, better ignore it here
-        if key == "Marker Ballmaschine":
+        if name == "Marker Ballmaschine":
             continue
 
-        T1 = vT1.get_T(key=key)
-        T2 = vT2.get_T(key=key)
+        T1 = vT1.get_T(name)
+        T2 = vT2.get_T(name)
         delta_tr = T1[:3, -1] - T2[:3, -1]
         delta_R = T1[:3, :3].T @ T2[:3, :3]
 
         # translation error
-        assert np.linalg.norm(delta_tr) < 0.0025, key
+        assert np.linalg.norm(delta_tr) < 0.0025, name
         # rotation error
-        assert SO3_2_so3(delta_R)[1] < 0.02, key
+        assert SO3_2_so3(delta_R)[1] < 0.02, name
 
 
 def test_basic_transforms_ping_at_origin(test_data):
