@@ -1,11 +1,9 @@
 import pathlib
 import numpy as np
-import math
 
 import pytest
 
 from vicon_transformer import ViconJsonFile
-import vicon_transformer.vicon_json as vj
 
 
 @pytest.fixture
@@ -13,43 +11,7 @@ def test_data():
     return pathlib.PurePath(__file__).parent / "data"
 
 
-def test_T():
-    R = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-    p = [0.1, 0.2, 0.3]
-    T = vj.T(R, p)
-    np.testing.assert_array_equal(
-        T, [[1, 2, 3, 0.1], [4, 5, 6, 0.2], [7, 8, 9, 0.3], [0, 0, 0, 1]]
-    )
-
-
-def test_inv_T():
-    T = np.array(
-        [
-            [0.81379768, -0.44096961, 0.37852231, 0.5],
-            [0.46984631, 0.88256412, 0.01802831, 1.0],
-            [-0.34202014, 0.16317591, 0.92541658, 1.245],
-            [0, 0, 0, 1],
-        ]
-    )
-    np.testing.assert_array_almost_equal(vj.inv_T(T), np.linalg.inv(T))
-
-
-def test_get_translation():
-    T = np.array([[1, 2, 3, 0.1], [4, 5, 6, 0.2], [7, 8, 9, 0.3], [0, 0, 0, 1]])
-    np.testing.assert_array_equal(vj.get_translation(T), [0.1, 0.2, 0.3])
-
-
-def test_origin_init(test_data):
-    def SO3_2_so3(R):
-        theta = math.acos(np.clip((np.trace(R) - 1.0) / 2.0, -1.0, 1.0))
-        if np.abs(theta) < 1e-6:
-            return np.array([0.0, 0.0, 0.0], dtype="float").reshape(3, 1), theta
-
-        w = 0.5 * np.array(
-            [R[2, 1] - R[1, 2], R[0, 2] - R[2, 0], R[1, 0] - R[0, 1]], dtype="float"
-        ).reshape(3, 1)
-        return w, theta
-
+def test_origin_init(test_data) -> None:
     vT1 = ViconJsonFile(test_data / "test_frame1.json")
     vT2 = ViconJsonFile(test_data / "test_frame2.json")
 
@@ -60,16 +22,16 @@ def test_origin_init(test_data):
 
         T1 = vT1.get_T(name)
         T2 = vT2.get_T(name)
-        delta_tr = T1[:3, -1] - T2[:3, -1]
-        delta_R = T1[:3, :3].T @ T2[:3, :3]
+        delta_tr = T1.translation - T2.translation
+        delta_R = T1.rotation.inv() * T2.rotation
 
         # translation error
         assert np.linalg.norm(delta_tr) < 0.0025, name
         # rotation error
-        assert SO3_2_so3(delta_R)[1] < 0.02, name
+        assert delta_R.magnitude() < 0.02, name
 
 
-def test_basic_transforms_ping_at_origin(test_data):
+def test_basic_transforms_ping_at_origin(test_data) -> None:
     # Load a file where the ping marker is at the origin.  This means the
     # transformations of all other markers should be exactly as in the file (since no
     # origin transformation is happening).
@@ -79,7 +41,7 @@ def test_basic_transforms_ping_at_origin(test_data):
     vicon = ViconJsonFile(test_data / "frame_ping_at_origin.json")
 
     np.testing.assert_array_almost_equal(
-        vicon.get_robot_base_T(),
+        vicon.get_robot_base_T().as_matrix(),
         [
             [
                 0.8663438846138151,
@@ -104,7 +66,7 @@ def test_basic_transforms_ping_at_origin(test_data):
     )
 
     np.testing.assert_array_almost_equal(
-        vicon.get_table1_T(),
+        vicon.get_table1_T().as_matrix(),
         [
             [
                 0.9447796559203805,
@@ -124,12 +86,12 @@ def test_basic_transforms_ping_at_origin(test_data):
                 0.9999066542286601,
                 40.67459816726638 / 1000,
             ],
-            [0, 0, 0, 1],
+            [0.0, 0.0, 0.0, 1.0],
         ],
     )
 
     np.testing.assert_array_almost_equal(
-        vicon.get_table2_T(),
+        vicon.get_table2_T().as_matrix(),
         [
             [
                 0.37591100914174547,
@@ -149,12 +111,12 @@ def test_basic_transforms_ping_at_origin(test_data):
                 0.9996284704160578,
                 43.524908145107894 / 1000,
             ],
-            [0, 0, 0, 1],
+            [0.0, 0.0, 0.0, 1.0],
         ],
     )
 
     np.testing.assert_array_almost_equal(
-        vicon.get_table3_T(),
+        vicon.get_table3_T().as_matrix(),
         [
             [
                 -0.9376639450735708,
@@ -174,12 +136,12 @@ def test_basic_transforms_ping_at_origin(test_data):
                 0.9976314208518802,
                 18.55445682535215 / 1000,
             ],
-            [0, 0, 0, 1],
+            [0.0, 0.0, 0.0, 1.0],
         ],
     )
 
     np.testing.assert_array_almost_equal(
-        vicon.get_table4_T(),
+        vicon.get_table4_T().as_matrix(),
         [
             [
                 -0.372867823047438,
@@ -199,12 +161,12 @@ def test_basic_transforms_ping_at_origin(test_data):
                 0.9998138214229968,
                 22.164776745602744 / 1000,
             ],
-            [0, 0, 0, 1],
+            [0.0, 0.0, 0.0, 1.0],
         ],
     )
 
 
-def test_basic_transforms_ping_simple_translation(test_data):
+def test_basic_transforms_ping_simple_translation(test_data) -> None:
     # Load a file where the ping marker has some translation from the origin but no
     # rotation.
     # Note that the translation in the file is in millimetres, so this needs to be
@@ -213,7 +175,7 @@ def test_basic_transforms_ping_simple_translation(test_data):
     vicon = ViconJsonFile(test_data / "frame_ping_simple_translation.json")
 
     np.testing.assert_array_almost_equal(
-        vicon.get_robot_base_T(),
+        vicon.get_robot_base_T().as_matrix(),
         [
             [
                 0.8663438846138151,
@@ -238,7 +200,7 @@ def test_basic_transforms_ping_simple_translation(test_data):
     )
 
     np.testing.assert_array_almost_equal(
-        vicon.get_table1_T(),
+        vicon.get_table1_T().as_matrix(),
         [
             [
                 0.9447796559203805,
@@ -258,12 +220,12 @@ def test_basic_transforms_ping_simple_translation(test_data):
                 0.9999066542286601,
                 43.67459816726638 / 1000,
             ],
-            [0, 0, 0, 1],
+            [0.0, 0.0, 0.0, 1.0],
         ],
     )
 
     np.testing.assert_array_almost_equal(
-        vicon.get_table2_T(),
+        vicon.get_table2_T().as_matrix(),
         [
             [
                 0.37591100914174547,
@@ -283,12 +245,12 @@ def test_basic_transforms_ping_simple_translation(test_data):
                 0.9996284704160578,
                 46.524908145107894 / 1000,
             ],
-            [0, 0, 0, 1],
+            [0.0, 0.0, 0.0, 1.0],
         ],
     )
 
     np.testing.assert_array_almost_equal(
-        vicon.get_table3_T(),
+        vicon.get_table3_T().as_matrix(),
         [
             [
                 -0.9376639450735708,
@@ -308,12 +270,12 @@ def test_basic_transforms_ping_simple_translation(test_data):
                 0.9976314208518802,
                 21.55445682535215 / 1000,
             ],
-            [0, 0, 0, 1],
+            [0.0, 0.0, 0.0, 1.0],
         ],
     )
 
     np.testing.assert_array_almost_equal(
-        vicon.get_table4_T(),
+        vicon.get_table4_T().as_matrix(),
         [
             [
                 -0.372867823047438,
@@ -333,12 +295,12 @@ def test_basic_transforms_ping_simple_translation(test_data):
                 0.9998138214229968,
                 25.164776745602744 / 1000,
             ],
-            [0, 0, 0, 1],
+            [0.0, 0.0, 0.0, 1.0],
         ],
     )
 
 
-def test_get_table_pos(test_data):
+def test_get_table_pos(test_data) -> None:
     vicon = ViconJsonFile(test_data / "frame_ping_at_origin.json")
 
     np.testing.assert_array_almost_equal(
@@ -346,11 +308,11 @@ def test_get_table_pos(test_data):
     )
 
 
-def test_get_robot_shoulder_T(test_data):
+def test_get_robot_shoulder_T(test_data) -> None:
     vicon = ViconJsonFile(test_data / "frame_ping_at_origin.json")
 
     np.testing.assert_array_almost_equal(
-        vicon.get_robot_shoulder_T(),
+        vicon.get_robot_shoulder_T().as_matrix(),
         [
             [
                 0.8663438846138151,
