@@ -19,6 +19,8 @@ find_package(ament_cmake REQUIRED)
 # add mpi_cmake_modules first as it provides FindX-files for some libraries
 find_package(mpi_cmake_modules REQUIRED)
 
+find_package(cli_utils REQUIRED)
+
 find_package(cereal REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(fmt REQUIRED)
@@ -69,6 +71,7 @@ target_link_libraries(vicon_print_data_cpp
 add_executable(vicon_record src/record.cpp)
 target_link_libraries(vicon_record
     vicon_receiver
+    cli_utils::program_options
 )
 
 ## Python Bindings
