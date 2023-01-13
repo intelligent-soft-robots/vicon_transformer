@@ -66,6 +66,7 @@ target_link_libraries(vicon_transformer
 add_executable(vicon_print_data_cpp src/vicon_print_data.cpp)
 target_link_libraries(vicon_print_data_cpp
     vicon_receiver
+    cli_utils::program_options
 )
 
 add_executable(vicon_record src/record.cpp)

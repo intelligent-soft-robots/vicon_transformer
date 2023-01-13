@@ -25,6 +25,7 @@
 
 #include <vicon-datastream-sdk/DataStreamClient.h>
 
+#include <string.h>
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
@@ -32,17 +33,74 @@
 #include <string>
 #include <vector>
 
-#include <string.h>
-
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 #include <cereal/archives/json.hpp>
+
+#include <cli_utils/program_options.hpp>
+
 #include <vicon_transformer/errors.hpp>
 #include <vicon_transformer/vicon_receiver.hpp>
 
-int main(int argc, char* argv[])
+namespace
+{
+// Class to get console arguments
+class Args : public cli_utils::ProgramOptions
+{
+public:
+    std::string host_name = "localhost:801";
+    bool lightweight = false;
+    bool only_once = false;
+    bool json_output = false;
+    std::vector<std::string> filtered_subjects;
+
+    std::string help() const override
+    {
+        return R"(Record Vicon data and save to file.
+
+Usage:  vicon_print_data_cpp <vicon-host-name> [options]
+
+)";
+    }
+
+    void add_options(boost::program_options::options_description &options,
+                     boost::program_options::positional_options_description
+                         &positional) override
+    {
+        namespace po = boost::program_options;
+        // clang-format off
+        options.add_options()
+            ("vicon-host-name",
+             po::value<std::string>(&host_name)->required(),
+             "Host name (or IP) of the Vicon PC.")
+            ("subjects",
+             po::value<std::vector<std::string>>(&filtered_subjects)->multitoken(),
+             "Only receive data for the listed subjects.")
+            ("lightweight",
+             "Enable lightweight frames (needs less bandwidth at the cost of lower precision).")
+            ("once",
+             "Only print one frame.")
+            ("json",
+             "Produce JSON-formatted output.")
+            ;
+        // clang-format on
+
+        positional.add("vicon-host-name", 1);
+    }
+
+    // for boolean flags without values, some post-processing is needed
+    void postprocess(const boost::program_options::variables_map &args) override
+    {
+        lightweight = args.count("lightweight") > 0;
+        only_once = args.count("once") > 0;
+        json_output = args.count("json") > 0;
+    }
+};
+}  // namespace
+
+int main(int argc, char *argv[])
 {
     auto logger = spdlog::get("root");
     if (!logger)
@@ -53,75 +111,18 @@ int main(int argc, char* argv[])
     }
 
     // Program options
-
-    int arg_num = 1;
-
-    std::string host_name = "localhost:801";
-    if (argc > 1 && strncmp(argv[arg_num], "--", 2) != 0)
+    Args args;
+    if (!args.parse_args(argc, argv))
     {
-        host_name = argv[arg_num];
-        arg_num++;
+        return 1;
     }
 
     vicon_transformer::ViconReceiverConfig config;
-    bool only_once = false;
-    bool json_output = false;
-    std::vector<std::string> filtered_subjects;
+    config.enable_lightweight = args.lightweight;
 
-    for (int a = arg_num; a < argc; ++a)
-    {
-        std::string arg = argv[a];
-        if (arg == "--help")
-        {
-            fmt::print(
-                "Usage: {} <host name> [options]\n\n"
-                "Options:\n"
-                " --help\n"
-                " --lightweight\n"
-                " --subjects <subject name> [<subject name> ...]\n"
-                " --once\n",
-                " --json\n",
-                argv[0]);
-            return 0;
-        }
-        else if (arg == "--lightweight")
-        {
-            config.enable_lightweight = true;
-        }
-        else if (arg == "--subjects")
-        {
-            ++a;
-            // assuming no subject name starts with "--"
-            while (a < argc)
-            {
-                if (strncmp(argv[a], "--", 2) == 0)
-                {
-                    --a;
-                    break;
-                }
-                filtered_subjects.push_back(argv[a]);
-                ++a;
-            }
-        }
-        else if (arg == "--once")
-        {
-            only_once = true;
-        }
-        else if (arg == "--json")
-        {
-            json_output = true;
-        }
-        else
-        {
-            fmt::print(
-                std::cerr, "Failed to understand argument '{}'", argv[a]);
-            return 1;
-        }
-    }
-
-    vicon_transformer::ViconReceiver receiver(host_name, config, logger);
+    vicon_transformer::ViconReceiver receiver(args.host_name, config, logger);
     receiver.connect();
-    receiver.filter_subjects(filtered_subjects);
+    receiver.filter_subjects(args.filtered_subjects);
     receiver.print_info();
 
     fmt::print("\n==============================\n\n");
@@ -132,7 +133,7 @@ int main(int argc, char* argv[])
         vicon_transformer::ViconFrame frame = receiver.read();
         receiver.print_latency_info();
 
-        if (json_output)
+        if (args.json_output)
         {
             cereal::JSONOutputArchive json_out(std::cout);
             frame.serialize(json_out);
@@ -142,7 +143,7 @@ int main(int argc, char* argv[])
             fmt::print("{}\n\n", frame);
         }
 
-        if (only_once)
+        if (args.only_once)
         {
             break;
         }
