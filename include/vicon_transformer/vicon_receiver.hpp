@@ -52,11 +52,38 @@ T from_json(const std::string& json_str)
     return from_json_stream<T>(stream);
 }
 
+/**
+ * @brief Information about a subject in a Vicon frame.
+ *
+ * A "subject" corresponds to an object that is registered in the Vicon Tracker
+ * software.
+ */
 struct SubjectData
 {
+    /**
+     * @brief Whether the subject is visible in the frame.
+     *
+     * IMPORTANT: If this is false, the values of all other fields of this
+     * struct are undefined!
+     */
     bool is_visible;
+    /**
+     * @brief Position of the subject w.r.t. the global origin.
+     *
+     * This field is only set if @ref is_visible is true.
+     */
     std::array<double, 3> global_translation;
+
+    /**
+     * @brief Orientation of the subject w.r.t. the global origin.
+     *
+     * The orientation is given as quaternion (x, y, z, w).
+     *
+     * This field is only set if @ref is_visible is true.
+     */
     std::array<double, 4> global_rotation_quaternion;
+
+    //! Quality measure of the pose estimation.
     double quality;
 
     template <class Archive>
@@ -69,14 +96,27 @@ struct SubjectData
     }
 };
 
+/**
+ * @brief All data of a single Vicon frame.
+ */
 struct ViconFrame
 {
-    // int format_version;
+    //! Frame sequence number.
     int frame_number = 0;
+    //! Frame rate of the Vicon system.
     double frame_rate = 0.0;
+    //! Latency of the frame.
     double latency = 0.0;
+    //! Time stamp when the frame was acquired.
     int64_t time_stamp = 0;
 
+    /**
+     * @brief List of subjects.
+     *
+     * Note that this list always contains entries for all registered subjects,
+     * even if they are not visible in the current frame.  Therefore, always
+     * check the ``is_visible`` field of the subject before using its pose.
+     */
     std::map<std::string, SubjectData> subjects;
 
     friend std::ostream& operator<<(std::ostream& os, const ViconFrame& vf);
@@ -99,9 +139,22 @@ struct ViconFrame
     }
 };
 
+//! Configuration structure for the ViconReceiver class.
 struct ViconReceiverConfig
 {
+    /**
+     * @brief Enable lightweight mode.
+     *
+     * If enabled, the pose information of the subjects is provided with reduced
+     * precision, thus reducing the amount of data that needs to be transmitted.
+     * See the Vicon documentation for more information.
+     */
     bool enable_lightweight = false;
+
+    /**
+     * @brief Buffer size used by the Vicon client.  If set to zero, no buffer
+     * is used, i.e. the client always provides the newest frame.
+     */
     unsigned int buffer_size = 0;
 
     template <class Archive>
@@ -111,33 +164,70 @@ struct ViconReceiverConfig
     }
 };
 
+/**
+ * @brief Base class for ViconFrame receiver classes.
+ */
 class BaseReceiver
 {
 public:
+    /**
+     * @brief Get new frame.  Block if no new frame is available yet.
+     *
+     * @return The acquired frame.
+     */
     virtual ViconFrame read() = 0;
 };
 
+/**
+ * @brief Receive frames from a running Vicon system.
+ *
+ * This assumes that a compatible Vicon software (e.g. Vicon Tracker) is set up
+ * and running on the specified host.
+ */
 class ViconReceiver : public BaseReceiver
 {
 public:
+    /**
+     * @param host_name Host name or IP address of the Vicon PC.
+     * @param config Receiver configuration.
+     * @param logger A logger instance used for logging output.  If not set, a
+     *      logger with name "ViconReceiver" used.
+     */
     ViconReceiver(const std::string& host_name,
                   const ViconReceiverConfig& config,
                   std::shared_ptr<spdlog::logger> logger = nullptr);
 
     ~ViconReceiver();
 
+    //! Check if connected to a Vicon server.
     bool is_connected() const;
 
+    //! Connect to the Vicon server on the specified host.
     void connect();
 
+    //! Disconnect from the Vicon server.
     void disconnect();
 
+    //! Print some info about the server configuration.
     void print_info() const;
 
+    //! Get a new frame from the Vicon system.
     ViconFrame read() override;
 
+    //! Print detailed latency information.
     void print_latency_info() const;
 
+    /**
+     * @brief Only receive data for the listed subjects.
+     *
+     * If set, pose data is only provided for the listed subjects.  Note that
+     * other subjects will still be included in the frame data but their pose
+     * will not be set.
+     * This can be used to reduce the required bandwidth, if only a few of the
+     * subjects are of interest.
+     *
+     * @param subjects List of subject names.
+     */
     void filter_subjects(const std::vector<std::string> subjects);
 
 private:
@@ -159,6 +249,7 @@ class JsonReceiver : public BaseReceiver
 public:
     JsonReceiver(const std::filesystem::path& filename);
 
+    //! Return the frame that was loaded from the file.
     ViconFrame read() override;
 
 private:

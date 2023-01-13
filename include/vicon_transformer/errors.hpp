@@ -12,6 +12,9 @@
 
 namespace vicon_transformer
 {
+/**
+ * @brief Indicates that the client is not connected to a Vicon server.
+ */
 class NotConnectedError : public std::runtime_error
 {
 public:
