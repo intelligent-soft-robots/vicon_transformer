@@ -25,6 +25,8 @@ public:
     Eigen::Vector3d translation;
 
 public:
+    //! Construct an identity transformation.
+    Transformation();
     //! Construct transformation from the given rotation and translation.
     Transformation(const Eigen::Quaterniond &rotation,
                    const Eigen::Vector3d &translation);
