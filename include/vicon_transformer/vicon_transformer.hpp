@@ -57,6 +57,21 @@ public:
     //! Set the Vicon frame that is used by the transformer.
     void set_frame(const ViconFrame &frame);
 
+    /**
+     * @brief Wait until the receiver provides a valid data for the origin
+     * subject.
+     *
+     * Calls @ref update() in a loop until a frame is provided in which the
+     * origin subject is visible.  This is needed, even if the origin subject is
+     * always in the scene, because after connecting it takes a bit until the
+     * Vicon server provides proper data (in the first frames all subjects are
+     * marked as not visible).
+     *
+     * If no origin subject has been specified (i.e. origin_subject_name is an
+     * empty string), this method returns immediately.
+     */
+    void wait_for_origin_subject_data();
+
     //! Get timestamp of the frame in nanoseconds.
     int64_t get_timestamp_ns() const;
 

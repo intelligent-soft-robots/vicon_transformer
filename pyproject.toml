@@ -6,12 +6,14 @@ build-backend = "setuptools.build_meta"
 [[tool.mypy.overrides]]
 module = [
     "geometry_msgs.*",
+    "o80",
     "rclpy.*",
     "scipy.*",
+    "signal_handler",
     "tf2_ros.*",
     "vicon_dssdk",
-    "zmq",
     "vicon_transformer.vicon_transformer_bindings",
+    "zmq",
 ]
 ignore_missing_imports = true
 
