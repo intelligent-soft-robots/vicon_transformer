@@ -8,7 +8,6 @@
 #include <fmt/format.h>
 #include <vicon-datastream-sdk/DataStreamClient.h>
 
-
 template <>
 struct fmt::formatter<ViconDataStreamSDK::CPP::Output_GetVersion>
     : formatter<string_view>

@@ -40,8 +40,7 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
         .def_readwrite("subjects", &vt::ViconFrame::subjects)
         .def(
             "__str__",
-            [](const vt::ViconFrame& vf)
-            {
+            [](const vt::ViconFrame& vf) {
                 std::stringstream stream;
                 stream << vf;
                 return stream.str();
