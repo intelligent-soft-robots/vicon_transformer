@@ -97,6 +97,12 @@ public:
      */
     Transformation get_raw_transform(const std::string &subject_name) const;
 
+    /**
+     * @brief Get the whole frame data with all subject poses relative to the origin
+     *  subject.
+     */
+    ViconFrame get_frame() const;
+
 protected:
     std::shared_ptr<spdlog::logger> log_;
     std::shared_ptr<Receiver> receiver_;

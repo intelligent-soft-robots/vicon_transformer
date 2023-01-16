@@ -221,6 +221,50 @@ TEST(ViconTransformer, basic_transforms_with_ping_translated)
     ASSERT_MATRIX_ALMOST_EQUAL(
         vtf.get_transform("TT Platte_Eckteil 1").matrix(), expected_corner_1);
 }
+
+TEST(ViconTransformer, get_frame)
+{
+    ViconTransformer vtf(get_receiver("frame_ping_simple_translation.json"),
+                         "rll_ping_base");
+    vtf.update();
+
+    ViconFrame frame = vtf.get_frame();
+
+    // check some frame meta data
+    EXPECT_EQ(frame.frame_number, 408812);
+    EXPECT_EQ(frame.time_stamp, 1638538681615901200);
+    EXPECT_DOUBLE_EQ(frame.latency, 0.006851512797093391);
+
+    // check some subjects
+    Eigen::Matrix4d expected_rll_muscle_base, expected_corner_1;
+
+    expected_rll_muscle_base << 0.8663438846138151, 0.4993031329659253,
+        -0.012027260812682643, 83.3450422755914 / 1000,  //
+        0.49936305903567846, -0.8663894341721914, 0.002425618543688639,
+        480.1439649956338 / 1000,  //
+        -0.009209172751897504, -0.008107389542971665, -0.9999247278530641,
+        471.5935179506591 / 1000,  //
+        0.0, 0.0, 0.0, 1.0;
+
+    expected_corner_1 << 0.9447796559203805, -0.3274233104572087,
+        0.01361534164865755, -2282.5873210084287 / 1000,  //
+        0.32746814862858703, 0.94486152759689, -0.0011424977185985471,
+        -1160.8202228673058 / 1000,  //
+        -0.012490532123690789, 0.00553799932409894, 0.9999066542286601,
+        43.67459816726638 / 1000,  //
+        0.0, 0.0, 0.0, 1.0;
+
+    ASSERT_MATRIX_ALMOST_EQUAL(
+        frame.subjects["rll_muscle_base"].global_pose.matrix(),
+        expected_rll_muscle_base);
+    ASSERT_MATRIX_ALMOST_EQUAL(
+        frame.subjects["TT Platte_Eckteil 1"].global_pose.matrix(),
+        expected_corner_1);
+    ASSERT_MATRIX_ALMOST_EQUAL(
+        frame.subjects["rll_ping_base"].global_pose.matrix(),
+        Eigen::Matrix4d::Identity());
+}
+
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);

@@ -117,4 +117,16 @@ const SubjectData &ViconTransformer::get_subject_data(
     }
 }
 
+ViconFrame ViconTransformer::get_frame() const
+{
+    ViconFrame transformed_frame = frame_;
+
+    for (auto &[name, data] : transformed_frame.subjects)
+    {
+        data.global_pose = origin_tf_ * data.global_pose;
+    }
+
+    return transformed_frame;
+}
+
 }  // namespace vicon_transformer
