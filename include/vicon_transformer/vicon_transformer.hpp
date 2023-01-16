@@ -17,13 +17,23 @@
 namespace vicon_transformer
 {
 /**
- * @brief Base class for ViconTransformer
+ * @brief Get data from a ViconReceiver and provide poses of subjects relative
+ * to an "origin subject".
  *
- * This base class includes all methods that do not depend on the template
- * argument of ViconTransformer.  This allows to implement them in the cpp
- * file.
+ * Vicon provides positions and orientations of subjects relative to an origin
+ * that is defined when calibrating the system.  Unfortunately, it is not easy
+ * precisely specify this, so the actual origin can be in a not very well
+ * defined location and can vary over time if the system is recalibrated.
+ *
+ * Instead, this class provides the option to specify a static object which
+ * doesn't move over time (e.g. some markers attached to a wall) as "origin
+ * subject" and provide poses of all other subjects relative to this origin
+ * subject.  This makes the poses independent of the actual origin used by Vicon
+ * and will give repeatable results, even if the system is recalibrated in
+ * between (at least as long as the markers of the origin subject are not
+ * moved).
  */
-class ViconTransformerBase  // TODO better name
+class ViconTransformer
 {
 public:
     /**
@@ -32,8 +42,17 @@ public:
      * @param logger A logger instance used for logging output.  If not set, a
      *      logger with name "ViconTransformer" used.
      */
-    ViconTransformerBase(const std::string &origin_subject_name,
-                         std::shared_ptr<spdlog::logger> logger = nullptr);
+    ViconTransformer(std::shared_ptr<Receiver> receiver,
+                     const std::string &origin_subject_name,
+                     std::shared_ptr<spdlog::logger> logger = nullptr);
+
+    //! Return a pointer to the receiver instance.
+    std::shared_ptr<Receiver> receiver();
+    //! Return a const pointer to the receiver instance.
+    std::shared_ptr<const Receiver> receiver() const;
+
+    //! Update transformations by getting a new frame from the receiver.
+    void update();
 
     //! Set the Vicon frame that is used by the transformer.
     void set_frame(const ViconFrame &frame);
@@ -80,63 +99,12 @@ public:
 
 protected:
     std::shared_ptr<spdlog::logger> log_;
+    std::shared_ptr<Receiver> receiver_;
     std::string origin_subject_name_;
     ViconFrame frame_;
     Transformation origin_tf_;
 
     const SubjectData &get_subject_data(const std::string &subject_name) const;
-};
-
-/**
- * @brief Get data from a ViconReceiver and provide poses of subjects relative
- * to an "origin subject".
- *
- * Vicon provides positions and orientations of subjects relative to an origin
- * that is defined when calibrating the system.  Unfortunately, it is not easy
- * precisely specify this, so the actual origin can be in a not very well
- * defined location and can vary over time if the system is recalibrated.
- *
- * Instead, this class provides the option to specify a static object which
- * doesn't move over time (e.g. some markers attached to a wall) as "origin
- * subject" and provide poses of all other subjects relative to this origin
- * subject.  This makes the poses independent of the actual origin used by Vicon
- * and will give repeatable results, even if the system is recalibrated in
- * between (at least as long as the markers of the origin subject are not
- * moved).
- *
- * @tparam Receiver The receiver class that is used.  Use ViconReceiver when
- *      working with an actual Vicon system.
- */
-template <typename Receiver>
-class ViconTransformer : public ViconTransformerBase
-{
-public:
-    ViconTransformer(std::shared_ptr<Receiver> receiver,
-                     const std::string &origin_subject_name,
-                     std::shared_ptr<spdlog::logger> logger = nullptr)
-        : ViconTransformerBase(origin_subject_name, logger), receiver_(receiver)
-    {
-    }
-
-    //! Return a pointer to the receiver instance.
-    std::shared_ptr<Receiver> receiver()
-    {
-        return receiver_;
-    }
-    //! Return a const pointer to the receiver instance.
-    std::shared_ptr<const Receiver> receiver() const
-    {
-        return receiver_;
-    }
-
-    //! Update transformations by getting a new frame from the receiver.
-    void update()
-    {
-        set_frame(receiver_->read());
-    }
-
-private:
-    std::shared_ptr<Receiver> receiver_;
 };
 
 }  // namespace vicon_transformer
