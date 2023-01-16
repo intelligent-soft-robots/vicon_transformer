@@ -170,6 +170,10 @@ struct ViconReceiverConfig
 class Receiver
 {
 public:
+    virtual ~Receiver()
+    {
+    }
+
     /**
      * @brief Get new frame.  Block if no new frame is available yet.
      *
