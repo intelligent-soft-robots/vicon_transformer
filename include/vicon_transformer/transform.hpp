@@ -25,12 +25,7 @@ public:
     Eigen::Vector3d translation;
 
 public:
-    /**
-     * @brief Construct transformation from the given rotation and translation.
-     *
-     * @param rotation
-     * @param translation
-     */
+    //! Construct transformation from the given rotation and translation.
     Transformation(const Eigen::Quaterniond &rotation,
                    const Eigen::Vector3d &translation);
     //! Construct transformation using only a rotation (translation is set to
