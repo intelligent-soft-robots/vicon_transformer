@@ -25,11 +25,8 @@
 
 #include <vicon-datastream-sdk/DataStreamClient.h>
 
-#include <string.h>
-#include <cstdlib>
-#include <iomanip>
+#include <filesystem>
 #include <iostream>
-#include <map>
 #include <string>
 #include <vector>
 
@@ -50,7 +47,7 @@ namespace
 class Args : public cli_utils::ProgramOptions
 {
 public:
-    std::string host_name = "localhost:801";
+    std::string host_or_file = "localhost:801";
     bool lightweight = false;
     bool only_once = false;
     bool json_output = false;
@@ -72,9 +69,9 @@ Usage:  vicon_print_data_cpp <vicon-host-name> [options]
         namespace po = boost::program_options;
         // clang-format off
         options.add_options()
-            ("vicon-host-name",
-             po::value<std::string>(&host_name)->required(),
-             "Host name (or IP) of the Vicon PC.")
+            ("vicon-host-name-or-file",
+             po::value<std::string>(&host_or_file)->required(),
+             "Host name (or IP) of the Vicon PC or the path to a recorded file.")
             ("subjects",
              po::value<std::vector<std::string>>(&filtered_subjects)->multitoken(),
              "Only receive data for the listed subjects.")
@@ -87,7 +84,7 @@ Usage:  vicon_print_data_cpp <vicon-host-name> [options]
             ;
         // clang-format on
 
-        positional.add("vicon-host-name", 1);
+        positional.add("vicon-host-name-or-file", 1);
     }
 
     // for boolean flags without values, some post-processing is needed
@@ -117,22 +114,72 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    vicon_transformer::ViconReceiverConfig config;
-    config.enable_lightweight = args.lightweight;
+    std::unique_ptr<vicon_transformer::BaseReceiver> receiver;
 
-    vicon_transformer::ViconReceiver receiver(args.host_name, config, logger);
-    receiver.connect();
-    receiver.filter_subjects(args.filtered_subjects);
-    receiver.print_info();
+    // if the argument is an existing file, load it for playback, otherwise
+    // assume its a hostname and try to connect
+    bool use_vicon_receiver = !std::filesystem::exists(args.host_or_file);
+    if (use_vicon_receiver)
+    {
+        // argument is a hostname/IP
+        vicon_transformer::ViconReceiverConfig config;
+        config.enable_lightweight = args.lightweight;
+
+        receiver = std::make_unique<vicon_transformer::ViconReceiver>(
+            args.host_or_file, config, logger);
+
+        auto ptr =
+            static_cast<vicon_transformer::ViconReceiver *>(receiver.get());
+        ptr->connect();
+        ptr->filter_subjects(args.filtered_subjects);
+        ptr->print_info();
+    }
+    else
+    {
+        // argument is a recorded file
+        receiver = std::make_unique<vicon_transformer::PlaybackReceiver>(
+            args.host_or_file, logger);
+
+        if (args.lightweight)
+        {
+            logger->warn(
+                "Argument --lightweight is ignored when playing back recorded "
+                "file.");
+        }
+        if (!args.filtered_subjects.empty())
+        {
+            logger->warn(
+                "Argument --subjects is ignored when playing back recorded "
+                "file.");
+        }
+    }
 
     fmt::print("\n==============================\n\n");
 
     //  Loop until a key is pressed
     while (true)
     {
-        vicon_transformer::ViconFrame frame = receiver.read();
-        receiver.print_latency_info();
+        // read the frame
+        vicon_transformer::ViconFrame frame;
+        try
+        {
+            frame = receiver->read();
+        }
+        catch (std::out_of_range &)
+        {
+            logger->info("Reached end of recording.");
+            break;
+        }
 
+        // print latency info (only when using ViconReceiver)
+        if (use_vicon_receiver)
+        {
+            auto ptr =
+                static_cast<vicon_transformer::ViconReceiver *>(receiver.get());
+            ptr->print_latency_info();
+        }
+
+        // print the frame data
         if (args.json_output)
         {
             cereal::JSONOutputArchive json_out(std::cout);
@@ -143,11 +190,17 @@ int main(int argc, char *argv[])
             fmt::print("{}\n\n", frame);
         }
 
+        // exit if --once was set
         if (args.only_once)
         {
             break;
         }
     }
 
-    receiver.disconnect();
+    if (use_vicon_receiver)
+    {
+        auto ptr =
+            static_cast<vicon_transformer::ViconReceiver *>(receiver.get());
+        ptr->disconnect();
+    }
 }
