@@ -255,4 +255,35 @@ public:
 private:
     ViconFrame frame_;
 };
+
+/**
+ * @brief Load frames from a recorded file and play it back.
+ *
+ * To record frames from the live system, use the ``vicon_record`` executable.
+ */
+class PlaybackReceiver : public BaseReceiver
+{
+public:
+    /**
+     * @param filename Path to the recorded file.
+     * @param logger A logger instance used for logging output.  If not set, a
+     *      logger with name "ViconReceiver" used.
+     */
+    PlaybackReceiver(const std::filesystem::path& filename,
+                     std::shared_ptr<spdlog::logger> logger = nullptr);
+
+    /**
+     * @brief Get next frame from the recorded file.
+     *
+     * @return Next frame from the recorded file.
+     * @throws std::out_of_range if end of the recording is reached.
+     */
+    ViconFrame read() override;
+
+private:
+    std::shared_ptr<spdlog::logger> log_;
+    std::vector<ViconFrame> tape_;
+    size_t tape_index_;
+};
+
 }  // namespace vicon_transformer

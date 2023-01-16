@@ -8,6 +8,8 @@
 #include <fmt/ranges.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
+#include <cereal/archives/binary.hpp>
+#include <cereal/types/vector.hpp>
 
 #include <vicon_transformer/errors.hpp>
 #include <vicon_transformer/fmt.hpp>
@@ -298,4 +300,42 @@ ViconFrame JsonReceiver::read()
 {
     return frame_;
 }
+
+PlaybackReceiver::PlaybackReceiver(const std::filesystem::path& filename,
+                                   std::shared_ptr<spdlog::logger> logger)
+{
+    if (logger)
+    {
+        log_ = logger;
+    }
+    else
+    {
+        const std::string name = "PlaybackReceiver";
+        if (!(log_ = spdlog::get(name)))
+        {
+            log_ = spdlog::stderr_color_mt(name);
+        }
+    }
+
+    log_->info("Load Vicon data from file {}", filename);
+
+    std::ifstream file(filename);
+    if (!file.is_open())
+    {
+        throw std::runtime_error(
+            fmt::format("Failed to open file {}", filename));
+    }
+
+    {
+        cereal::BinaryInputArchive archive(file);
+        archive(tape_);
+    }
+    tape_index_ = 0;
+}
+
+ViconFrame PlaybackReceiver::read()
+{
+    return tape_.at(tape_index_++);
+}
+
 }  // namespace vicon_transformer
