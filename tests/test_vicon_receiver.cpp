@@ -8,6 +8,7 @@
 #include <vicon_transformer/vicon_receiver.hpp>
 
 using vicon_transformer::JsonReceiver;
+using vicon_transformer::PlaybackReceiver;
 using vicon_transformer::ViconFrame;
 
 TEST(JsonReceiver, load_file)
@@ -29,6 +30,46 @@ TEST(JsonReceiver, file_not_found)
     std::string file = "tests/data/this_does_not_exist.json";
 
     EXPECT_THROW({ JsonReceiver receiver(file); }, std::runtime_error);
+}
+
+TEST(PlaybackReceiver, load_and_playback)
+{
+    // assumes test is executed in package root directory
+    std::string file = "tests/data/recording_3s.dat";
+
+    PlaybackReceiver receiver(file);
+
+    // verify file is loaded by checking some values of the first frame
+    ViconFrame frame = receiver.read();
+
+    EXPECT_EQ(frame.frame_number, 1212090);
+    EXPECT_EQ(frame.time_stamp, 1673868273844002798);
+    EXPECT_EQ(frame.latency, 0.009009800851345062);
+    EXPECT_EQ(frame.subjects["Marker_Arm"].quality, 3.3042405133025308);
+
+    // The recording takes ~3 seconds.  At 300 fps, this corresponds to ~900
+    // frames. Loop over them and verify the proper exception is thrown in the
+    // end.
+    for (int i = 0; i < 890; i++)
+    {
+        receiver.read();
+    }
+
+    // when reaching the end, there should be a std::out_of_range error
+    EXPECT_THROW(
+        {
+            for (int i = 0; i < 20; i++)
+            {
+                receiver.read();
+            }
+        },
+        std::out_of_range);
+}
+
+TEST(PlaybackReceiver, file_not_found)
+{
+    std::string file = "tests/data/this_does_not_exists.dat";
+    EXPECT_THROW({ PlaybackReceiver receiver(file); }, std::runtime_error);
 }
 
 int main(int argc, char **argv)
