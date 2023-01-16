@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    std::unique_ptr<vicon_transformer::BaseReceiver> receiver;
+    std::unique_ptr<vicon_transformer::Receiver> receiver;
 
     // if the argument is an existing file, load it for playback, otherwise
     // assume its a hostname and try to connect

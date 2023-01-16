@@ -167,7 +167,7 @@ struct ViconReceiverConfig
 /**
  * @brief Base class for ViconFrame receiver classes.
  */
-class BaseReceiver
+class Receiver
 {
 public:
     /**
@@ -184,7 +184,7 @@ public:
  * This assumes that a compatible Vicon software (e.g. Vicon Tracker) is set up
  * and running on the specified host.
  */
-class ViconReceiver : public BaseReceiver
+class ViconReceiver : public Receiver
 {
 public:
     /**
@@ -244,7 +244,7 @@ private:
  * @brief Load a single frame from a JSON file and return it on every read()
  * call. Meant for testing.
  */
-class JsonReceiver : public BaseReceiver
+class JsonReceiver : public Receiver
 {
 public:
     JsonReceiver(const std::filesystem::path& filename);
@@ -261,7 +261,7 @@ private:
  *
  * To record frames from the live system, use the ``vicon_record`` executable.
  */
-class PlaybackReceiver : public BaseReceiver
+class PlaybackReceiver : public Receiver
 {
 public:
     /**
