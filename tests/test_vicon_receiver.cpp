@@ -42,10 +42,10 @@ TEST(PlaybackReceiver, load_and_playback)
     // verify file is loaded by checking some values of the first frame
     ViconFrame frame = receiver.read();
 
-    EXPECT_EQ(frame.frame_number, 1212090);
-    EXPECT_EQ(frame.time_stamp, 1673868273844002798);
-    EXPECT_EQ(frame.latency, 0.009009800851345062);
-    EXPECT_EQ(frame.subjects["Marker_Arm"].quality, 3.3042405133025308);
+    EXPECT_EQ(frame.frame_number, 6294704);
+    EXPECT_EQ(frame.time_stamp, 1673885215803208651);
+    EXPECT_EQ(frame.latency, 0.010578898712992668);
+    EXPECT_EQ(frame.subjects["Marker_Arm"].quality, 3.02566717326428);
 
     // The recording takes ~3 seconds.  At 300 fps, this corresponds to ~900
     // frames. Loop over them and verify the proper exception is thrown in the

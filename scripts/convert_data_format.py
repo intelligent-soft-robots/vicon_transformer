@@ -67,6 +67,30 @@ def convert_record_2to3(
     return record
 
 
+def convert_record_3to4(
+    record: typing.Dict[str, typing.Any]
+) -> typing.Dict[str, typing.Any]:
+    def cvt_subject(sd):
+        val = sd["value"]
+        val["global_pose"] = {
+            "qx": val["global_rotation_quaternion"][0],
+            "qy": val["global_rotation_quaternion"][1],
+            "qz": val["global_rotation_quaternion"][2],
+            "qw": val["global_rotation_quaternion"][3],
+            "x": val["global_translation"][0] / 1000,
+            "y": val["global_translation"][1] / 1000,
+            "z": val["global_translation"][2] / 1000,
+        }
+        del val["global_translation"]
+        del val["global_rotation_quaternion"]
+        return sd
+
+    record["subjects"] = [cvt_subject(s) for s in record["subjects"]]
+    record["format_version"] = 4
+
+    return record
+
+
 def main() -> int:
     logging.basicConfig(level=logging.INFO)
 
@@ -107,6 +131,8 @@ def main() -> int:
         elif record["format_version"] == 2:
             record = convert_record_2to3(record)
         elif record["format_version"] == 3:
+            record = convert_record_3to4(record)
+        elif record["format_version"] == 4:
             logging.info("File is already in the latest format.")
         else:
             logging.fatal("Unexpected format version %s", record["format_version"])

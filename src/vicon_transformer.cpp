@@ -101,17 +101,7 @@ Transformation ViconTransformer::get_raw_transform(
         throw SubjectNotVisibleError(subject_name);
     }
 
-    // NOTE: SubjectData provides quaternion in (x, y, z, w) format but Eigen
-    // expected (w, x, y, z).
-    const auto &[qx, qy, qz, qw] = sd.global_rotation_quaternion;
-    Eigen::Quaterniond rotation(qw, qx, qy, qz);
-
-    // NOTE: Vicon provides translation in millimetres, so needs to be converted
-    // to metres
-    Eigen::Vector3d translation =
-        Eigen::Map<Eigen::Vector3d>(sd.global_translation.data()) / 1000;
-
-    return Transformation(rotation, translation);
+    return sd.global_pose;
 }
 
 const SubjectData &ViconTransformer::get_subject_data(

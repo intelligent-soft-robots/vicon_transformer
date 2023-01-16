@@ -13,6 +13,8 @@
 #include <cereal/types/map.hpp>
 #include <cereal/types/string.hpp>
 
+#include "transform.hpp"
+
 namespace vicon_transformer
 {
 /**
@@ -32,20 +34,11 @@ struct SubjectData
     bool is_visible;
 
     /**
-     * @brief Position of the subject w.r.t. the global origin.
+     * @brief Pose of the subject w.r.t. the global origin.
      *
      * This field is only set if @ref is_visible is true.
      */
-    std::array<double, 3> global_translation;
-
-    /**
-     * @brief Orientation of the subject w.r.t. the global origin.
-     *
-     * The orientation is given as quaternion (x, y, z, w).
-     *
-     * This field is only set if @ref is_visible is true.
-     */
-    std::array<double, 4> global_rotation_quaternion;
+    Transformation global_pose;
 
     //! Quality measure of the pose estimation.
     double quality;
@@ -54,8 +47,7 @@ struct SubjectData
     void serialize(Archive& archive)
     {
         archive(CEREAL_NVP(is_visible),
-                CEREAL_NVP(global_translation),
-                CEREAL_NVP(global_rotation_quaternion),
+                CEREAL_NVP(global_pose),
                 CEREAL_NVP(quality));
     }
 };
@@ -88,9 +80,9 @@ struct ViconFrame
     template <class Archive>
     void serialize(Archive& archive)
     {
-        int format_version = 3;
+        int format_version = 4;
         archive(CEREAL_NVP(format_version));
-        if (format_version != 3)
+        if (format_version != 4)
         {
             throw std::runtime_error("Invalid input format");
         }
