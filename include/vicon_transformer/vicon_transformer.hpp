@@ -98,8 +98,8 @@ public:
     Transformation get_raw_transform(const std::string &subject_name) const;
 
     /**
-     * @brief Get the whole frame data with all subject poses relative to the origin
-     *  subject.
+     * @brief Get the whole frame data with all subject poses relative to the
+     * origin subject.
      */
     ViconFrame get_frame() const;
 

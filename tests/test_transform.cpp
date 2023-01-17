@@ -7,7 +7,7 @@
 #include <Eigen/Eigen>
 
 #include <vicon_transformer/transform.hpp>
-#include <vicon_transformer/vicon_receiver.hpp> // for to_json/from_json
+#include <vicon_transformer/vicon_receiver.hpp>  // for to_json/from_json
 
 #include "utils.hpp"
 
