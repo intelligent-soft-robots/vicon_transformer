@@ -8,6 +8,7 @@
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/stl/filesystem.h>
 
 #include <vicon_transformer/errors.hpp>
 #include <vicon_transformer/transform.hpp>
@@ -74,7 +75,11 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
     m.def("to_json", &vt::to_json<vt::ViconReceiverConfig>);
     m.def("from_json", &vt::from_json<vt::ViconReceiverConfig>);
 
-    py::class_<vt::ViconReceiver>(m, "ViconReceiver")
+    py::class_<vt::Receiver, std::shared_ptr<vt::Receiver>> PyReceiver(
+        m, "Receiver");
+    py::class_<vt::ViconReceiver,
+               std::shared_ptr<vt::ViconReceiver>,
+               vt::Receiver>(m, "ViconReceiver")
         .def(py::init<std::string, vt::ViconReceiverConfig>(),
              py::arg("host_name"),
              py::arg("config"),
@@ -99,5 +104,14 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
              py::call_guard<py::gil_scoped_release>())
         .def("filter_subjects",
              &vt::ViconReceiver::filter_subjects,
+             py::call_guard<py::gil_scoped_release>());
+    py::class_<vt::PlaybackReceiver,
+               std::shared_ptr<vt::PlaybackReceiver>,
+               vt::Receiver>(m, "PlaybackReceiver")
+        .def(py::init<const std::filesystem::path&>(),
+             py::arg("filename"),
+             py::call_guard<py::gil_scoped_release>())
+        .def("read",
+             &vt::PlaybackReceiver::read,
              py::call_guard<py::gil_scoped_release>());
 }
