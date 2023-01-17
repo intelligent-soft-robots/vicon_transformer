@@ -7,6 +7,8 @@
 
 #include <vicon_transformer/vicon_receiver.hpp>
 
+#include "utils.hpp"
+
 using vicon_transformer::JsonReceiver;
 using vicon_transformer::PlaybackReceiver;
 using vicon_transformer::ViconFrame;
@@ -30,6 +32,33 @@ TEST(JsonReceiver, file_not_found)
     std::string file = "tests/data/this_does_not_exist.json";
 
     EXPECT_THROW({ JsonReceiver receiver(file); }, std::runtime_error);
+}
+
+TEST(ViconFrame, serialize)
+{
+    // assumes test is executed in package root directory
+    std::string file = "tests/data/test_frame1.json";
+
+    JsonReceiver receiver(file);
+    ViconFrame frame1 = receiver.read();
+
+    // serialize and deserialize (use json helper functions for convenience)
+    std::string json = vicon_transformer::to_json(frame1);
+    auto frame2 = vicon_transformer::from_json<ViconFrame>(json);
+
+    // verify frame gets deserialized to original values
+    EXPECT_EQ(frame1.frame_number, frame2.frame_number);
+    EXPECT_EQ(frame1.frame_rate, frame2.frame_rate);
+    EXPECT_EQ(frame1.time_stamp, frame2.time_stamp);
+    EXPECT_EQ(frame1.latency, frame2.latency);
+    vicon_transformer::SubjectData arm1 = frame1.subjects.at("Marker_Arm");
+    vicon_transformer::SubjectData arm2 = frame2.subjects.at("Marker_Arm");
+    EXPECT_EQ(arm1.is_visible, arm2.is_visible);
+    EXPECT_EQ(arm1.quality, arm2.quality);
+    ASSERT_QUATERNION_ALMOST_EQUAL(arm1.global_pose.rotation,
+                                   arm2.global_pose.rotation);
+    ASSERT_MATRIX_ALMOST_EQUAL(arm1.global_pose.translation,
+                               arm2.global_pose.translation);
 }
 
 TEST(PlaybackReceiver, load_and_playback)
