@@ -10,7 +10,7 @@ from .transform import Transformation, Rotation
 
 
 class ViconJsonBase:
-    FORMAT_VERSION = 2
+    FORMAT_VERSION = 3
 
     def __init__(self) -> None:
         self.log = logging.getLogger(__name__)
@@ -22,13 +22,22 @@ class ViconJsonBase:
         originKey = "rll_ping_base"
         self.T_origin_vicon = self.get_T(originKey).inv()
 
-    def _check_format_version(self, record):
+    def _check_format_version(self, record: dict) -> None:
         format_version = record.get("format_version")
         if format_version != self.FORMAT_VERSION:
             raise RuntimeError(
                 f"Incompatible format version '{format_version}'."
                 f"  Expected {self.FORMAT_VERSION}."
             )
+
+    def _process_record(self, record: dict) -> dict:
+        # first verify the record has the expected format
+        self._check_format_version(record)
+
+        # convert the subject list to a dictionary
+        record["subjects"] = {s["key"]: s["value"] for s in record["subjects"]}
+
+        return record
 
     def read(self):
         raise NotImplementedError()
@@ -109,11 +118,11 @@ class ViconJsonBase:
         """Returns homogeneous transformation in origin frame."""
         subject_data = self.json_obj["subjects"][subject_name]
 
-        if subject_data["quality"] == "Not present":
+        if not subject_data["is_visible"]:
             raise errors.SubjectNotPresentError(subject_name)
 
-        translation = 1e-3 * np.asarray(subject_data["global_translation"][0])
-        rotation = Rotation(subject_data["global_rotation"]["quaternion"][0])
+        translation = 1e-3 * np.asarray(subject_data["global_translation"])
+        rotation = Rotation.from_quat(subject_data["global_rotation_quaternion"])
         tf = Transformation(rotation, translation)
 
         return self.T_origin_vicon * tf
@@ -136,8 +145,7 @@ class ViconJsonZmq(ViconJsonBase):
 
     def read(self):
         record = self.receiver.read()
-        self._check_format_version(record)
-        self.json_obj = record
+        self.json_obj = self._process_record(record)
         return self.json_obj
 
 
@@ -160,6 +168,6 @@ class ViconJsonFile(ViconJsonBase):
         with open(fname) as json_file:
             r = json.load(json_file)
 
-        self._check_format_version(r)
+        r = self._process_record(r)
 
         return r

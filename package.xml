@@ -11,13 +11,22 @@ schematypens="http://www.w3.org/2001/XMLSchema"?>
     <maintainer email="dbuechler@tuebingen.mpg.de">Dieter Buechler</maintainer>
     <license>BSD 3-Clause</license>
 
-    <buildtool_depend>ament_python</buildtool_depend>
+    <buildtool_depend>ament_cmake</buildtool_depend>
 
     <exec_depend>rclpy</exec_depend>
     <exec_depend>tf2_ros</exec_depend>
     <exec_depend>geometry_msgs</exec_depend>
 
+    <build_depend>pybind11</build_depend>
+    <build_depend>mpi_cmake_modules</build_depend>
+
+    <depend>cereal</depend>
+    <depend>cli_utils</depend>
+
+    <test_depend>ament_cmake_gmock</test_depend>
+    <test_depend>ament_cmake_pytest</test_depend>
+
     <export>
-        <build_type>ament_python</build_type>
+        <build_type>ament_cmake</build_type>
     </export>
 </package>

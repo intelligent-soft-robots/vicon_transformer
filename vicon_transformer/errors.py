@@ -3,6 +3,7 @@
 
 class ViconTransformerError(Exception):
     """Base error for custom errors of this package."""
+
     pass
 
 

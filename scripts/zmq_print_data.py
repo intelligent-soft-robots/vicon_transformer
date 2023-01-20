@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Receive JSON date via ZMQ and print to terminal."""
 import argparse
 import json
 import logging
@@ -40,18 +41,6 @@ def main():
         logging.info("start receiving")
         while True:
             j = sub.recv_json()
-            if j["frame_number"] % 150 == 0:
-                logging.info(
-                    str(j["frame_number"])
-                    + " \\ "
-                    + str(j["my_frame_number"])
-                    + " on since "
-                    + str(j["on_time"])
-                    + " with time stamp"
-                    + str(j["time_stamp"])
-                )
-                # print('closed: ' + str(sub.closed))
-                print(str(j["subject_2"]["global_translation"]))
             print(json.dumps(j, indent=4, sort_keys=True))
 
     return 0
