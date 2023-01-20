@@ -4,10 +4,13 @@
  */
 #include <sstream>
 
+#include <pybind11/eigen.h>
+#include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
 #include <vicon_transformer/errors.hpp>
+#include <vicon_transformer/transform.hpp>
 #include <vicon_transformer/vicon_receiver.hpp>
 
 PYBIND11_MODULE(vicon_transformer_bindings, m)
@@ -20,13 +23,27 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
     py::register_exception<vt::BadResultError>(
         m, "BadResultError", PyExc_RuntimeError);
 
+    // TODO: add unit tests for bindings of Transformation
+    py::class_<vt::Transformation>(m, "Transformation")
+        .def(py::init<>(), py::call_guard<py::gil_scoped_release>())
+        .def(py::init<Eigen::Quaterniond, Eigen::Vector3d>(),
+             py::call_guard<py::gil_scoped_release>())
+        .def(py::self * py::self)
+        .def(py::self * Eigen::Vector3d())
+        .def("apply",
+             &vt::Transformation::apply,
+             py::call_guard<py::gil_scoped_release>())
+        .def("inverse",
+             &vt::Transformation::inverse,
+             py::call_guard<py::gil_scoped_release>())
+        .def("matrix",
+             &vt::Transformation::matrix,
+             py::call_guard<py::gil_scoped_release>());
+
     py::class_<vt::SubjectData>(m, "SubjectData")
         .def(py::init<>())
         .def_readwrite("is_visible", &vt::SubjectData::is_visible)
-        .def_readwrite("global_translation",
-                       &vt::SubjectData::global_translation)
-        .def_readwrite("global_rotation_quaternion",
-                       &vt::SubjectData::global_rotation_quaternion)
+        .def_readwrite("global_pose", &vt::SubjectData::global_pose)
         .def_readwrite("quality", &vt::SubjectData::quality);
     m.def("to_json", &vt::to_json<vt::SubjectData>);
     m.def("from_json", &vt::from_json<vt::SubjectData>);

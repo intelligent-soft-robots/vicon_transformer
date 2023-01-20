@@ -33,8 +33,15 @@ std::ostream& operator<<(std::ostream& os, const ViconFrame& vf)
     {
         fmt::print(os, "  {}\n", name);
         fmt::print(os, "    Visible: {}\n", data.is_visible);
-        fmt::print(os, "    Translation: {}\n", data.global_translation);
-        fmt::print(os, "    Rotation: {}\n", data.global_rotation_quaternion);
+        fmt::print(os,
+                   "    Translation: {}\n",
+                   data.global_pose.translation.transpose());
+        fmt::print(os,
+                   "    Rotation: ({}, {}, {}, {})\n",
+                   data.global_pose.rotation.x(),
+                   data.global_pose.rotation.y(),
+                   data.global_pose.rotation.z(),
+                   data.global_pose.rotation.w());
         fmt::print(os, "    Quality: {}\n", data.quality);
     }
 
@@ -207,13 +214,17 @@ ViconFrame ViconReceiver::read()
         subject_data.is_visible =
             !(global_translation.Occluded or global_rotation.Occluded);
 
-        std::move(std::begin(global_translation.Translation),
-                  std::end(global_translation.Translation),
-                  subject_data.global_translation.begin());
+        // NOTE: Vicon provides quaternion in (x, y, z, w) format but Eigen
+        // expects (w, x, y, z).
+        const auto& [qx, qy, qz, qw] = global_rotation.Rotation;
+        Eigen::Quaterniond rotation(qw, qx, qy, qz);
 
-        std::move(std::begin(global_rotation.Rotation),
-                  std::end(global_rotation.Rotation),
-                  subject_data.global_rotation_quaternion.begin());
+        // NOTE: Vicon provides translation in millimetres, so needs to be
+        // converted to metres
+        Eigen::Vector3d translation =
+            Eigen::Map<Eigen::Vector3d>(global_translation.Translation) / 1000;
+
+        subject_data.global_pose = Transformation(rotation, translation);
 
         // Get the quality of the subject (object) if supported
         auto quality = client_.GetObjectQuality(subject_name);

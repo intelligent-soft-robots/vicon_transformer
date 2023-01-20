@@ -6,11 +6,11 @@ import numpy as np
 
 from . import errors
 from .receiver import ZmqJsonReceiver
-from .transform import Transformation, Rotation
+from .transform import Transformation
 
 
 class ViconJsonBase:
-    FORMAT_VERSION = 3
+    FORMAT_VERSION = 4
 
     def __init__(self) -> None:
         self.log = logging.getLogger(__name__)
@@ -121,8 +121,11 @@ class ViconJsonBase:
         if not subject_data["is_visible"]:
             raise errors.SubjectNotPresentError(subject_name)
 
-        translation = 1e-3 * np.asarray(subject_data["global_translation"])
-        rotation = Rotation.from_quat(subject_data["global_rotation_quaternion"])
+        tf_values = subject_data["global_pose"]
+        rotation = np.array(
+            [tf_values["qx"], tf_values["qy"], tf_values["qz"], tf_values["qw"]]
+        )
+        translation = np.array([tf_values["x"], tf_values["y"], tf_values["z"]])
         tf = Transformation(rotation, translation)
 
         return self.T_origin_vicon * tf

@@ -7,6 +7,7 @@
 #include <Eigen/Eigen>
 
 #include <vicon_transformer/transform.hpp>
+#include <vicon_transformer/vicon_receiver.hpp>  // for to_json/from_json
 
 #include "utils.hpp"
 
@@ -100,6 +101,18 @@ TEST(TestTransformation, inverse)
     Eigen::Matrix4d inv_mat = tf.matrix().inverse();
 
     ASSERT_MATRIX_ALMOST_EQUAL(inv_tf.matrix(), inv_mat);
+}
+
+TEST(TestTransformation, serialize)
+{
+    auto tf = Transformation(
+        Eigen::Quaterniond(0.95145453, 0.0948712, 0.29247034, -0.01395812),
+        Eigen::Vector3d(1.0, 2.0, 3.0));
+
+    std::string json = vicon_transformer::to_json(tf);
+    auto tf2 = vicon_transformer::from_json<Transformation>(json);
+    ASSERT_QUATERNION_ALMOST_EQUAL(tf.rotation, tf2.rotation);
+    ASSERT_MATRIX_ALMOST_EQUAL(tf.translation, tf2.translation);
 }
 
 int main(int argc, char **argv)

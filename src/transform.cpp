@@ -2,6 +2,11 @@
 
 namespace vicon_transformer
 {
+Transformation::Transformation()
+    : Transformation(Eigen::Quaterniond::Identity(), Eigen::Vector3d::Zero())
+{
+}
+
 Transformation::Transformation(const Eigen::Quaterniond &rotation,
                                const Eigen::Vector3d &translation)
     : rotation(rotation), translation(translation)

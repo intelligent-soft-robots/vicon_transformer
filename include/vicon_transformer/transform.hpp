@@ -7,6 +7,8 @@
 
 #include <Eigen/Eigen>
 
+#include <cereal/cereal.hpp>
+
 namespace vicon_transformer
 {
 /**
@@ -25,6 +27,8 @@ public:
     Eigen::Vector3d translation;
 
 public:
+    //! Construct an identity transformation.
+    Transformation();
     //! Construct transformation from the given rotation and translation.
     Transformation(const Eigen::Quaterniond &rotation,
                    const Eigen::Vector3d &translation);
@@ -49,5 +53,18 @@ public:
 
     //! Convert transformation to a homogeneous matrix (4x4).
     Eigen::Matrix4d matrix() const;
+
+    // for serialisation
+    template <class Archive>
+    void serialize(Archive &archive)
+    {
+        archive(cereal::make_nvp("qx", rotation.x()),
+                cereal::make_nvp("qy", rotation.y()),
+                cereal::make_nvp("qz", rotation.z()),
+                cereal::make_nvp("qw", rotation.w()),
+                cereal::make_nvp("x", translation.x()),
+                cereal::make_nvp("y", translation.y()),
+                cereal::make_nvp("z", translation.z()));
+    }
 };
 }  // namespace vicon_transformer

@@ -9,10 +9,11 @@
 
 namespace vicon_transformer
 {
-ViconTransformerBase::ViconTransformerBase(
-    const std::string &origin_subject_name,
-    std::shared_ptr<spdlog::logger> logger)
-    : origin_subject_name_(origin_subject_name),
+ViconTransformer::ViconTransformer(std::shared_ptr<Receiver> receiver,
+                                   const std::string &origin_subject_name,
+                                   std::shared_ptr<spdlog::logger> logger)
+    : receiver_(receiver),
+      origin_subject_name_(origin_subject_name),
       origin_tf_(Transformation::Identity())
 {
     if (logger)
@@ -29,7 +30,22 @@ ViconTransformerBase::ViconTransformerBase(
     }
 }
 
-void ViconTransformerBase::set_frame(const ViconFrame &frame)
+std::shared_ptr<Receiver> ViconTransformer::receiver()
+{
+    return receiver_;
+}
+
+std::shared_ptr<const Receiver> ViconTransformer::receiver() const
+{
+    return receiver_;
+}
+
+void ViconTransformer::update()
+{
+    set_frame(receiver_->read());
+}
+
+void ViconTransformer::set_frame(const ViconFrame &frame)
 {
     frame_ = frame;
 
@@ -41,12 +57,12 @@ void ViconTransformerBase::set_frame(const ViconFrame &frame)
     }
 }
 
-int64_t ViconTransformerBase::get_timestamp_ns() const
+int64_t ViconTransformer::get_timestamp_ns() const
 {
     return frame_.time_stamp;
 }
 
-std::vector<std::string> ViconTransformerBase::get_subject_names() const
+std::vector<std::string> ViconTransformer::get_subject_names() const
 {
     std::vector<std::string> names;
     names.reserve(frame_.subjects.size());
@@ -57,7 +73,7 @@ std::vector<std::string> ViconTransformerBase::get_subject_names() const
     return names;
 }
 
-bool ViconTransformerBase::is_visible(const std::string &subject_name) const
+bool ViconTransformer::is_visible(const std::string &subject_name) const
 {
     try
     {
@@ -69,13 +85,13 @@ bool ViconTransformerBase::is_visible(const std::string &subject_name) const
     }
 }
 
-Transformation ViconTransformerBase::get_transform(
+Transformation ViconTransformer::get_transform(
     const std::string &subject_name) const
 {
     return origin_tf_ * get_raw_transform(subject_name);
 }
 
-Transformation ViconTransformerBase::get_raw_transform(
+Transformation ViconTransformer::get_raw_transform(
     const std::string &subject_name) const
 {
     SubjectData sd = get_subject_data(subject_name);
@@ -85,20 +101,10 @@ Transformation ViconTransformerBase::get_raw_transform(
         throw SubjectNotVisibleError(subject_name);
     }
 
-    // NOTE: SubjectData provides quaternion in (x, y, z, w) format but Eigen
-    // expected (w, x, y, z).
-    const auto &[qx, qy, qz, qw] = sd.global_rotation_quaternion;
-    Eigen::Quaterniond rotation(qw, qx, qy, qz);
-
-    // NOTE: Vicon provides translation in millimetres, so needs to be converted
-    // to metres
-    Eigen::Vector3d translation =
-        Eigen::Map<Eigen::Vector3d>(sd.global_translation.data()) / 1000;
-
-    return Transformation(rotation, translation);
+    return sd.global_pose;
 }
 
-const SubjectData &ViconTransformerBase::get_subject_data(
+const SubjectData &ViconTransformer::get_subject_data(
     const std::string &subject_name) const
 {
     try
@@ -109,6 +115,18 @@ const SubjectData &ViconTransformerBase::get_subject_data(
     {
         throw UnknownSubjectError(subject_name);
     }
+}
+
+ViconFrame ViconTransformer::get_frame() const
+{
+    ViconFrame transformed_frame = frame_;
+
+    for (auto &[name, data] : transformed_frame.subjects)
+    {
+        data.global_pose = origin_tf_ * data.global_pose;
+    }
+
+    return transformed_frame;
 }
 
 }  // namespace vicon_transformer
