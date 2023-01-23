@@ -37,6 +37,7 @@ ament_python_install_package(${PROJECT_NAME} PACKAGE_DIR ${PROJECT_NAME})
 add_library(vicon_receiver
     src/vicon_receiver.cpp
     src/transform.cpp
+    src/types.cpp
 )
 target_include_directories(vicon_receiver PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
