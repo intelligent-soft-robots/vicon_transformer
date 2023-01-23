@@ -1,6 +1,3 @@
-from .receiver import ZmqJsonReceiver
-from .vicon_json import ViconJsonZmq, ViconJsonFile
-
 from .vicon_transformer_bindings import (
     BadResultError,
     NotConnectedError,
@@ -35,12 +32,9 @@ __all__ = (
     "SubjectNotVisibleError",
     "UnknownSubjectError",
     "ViconFrame",
-    "ViconJsonFile",
-    "ViconJsonZmq",
     "ViconReceiver",
     "ViconReceiverConfig",
     "ViconTransformer",
-    "ZmqJsonReceiver",
     "to_json",
     "from_json",
 )
