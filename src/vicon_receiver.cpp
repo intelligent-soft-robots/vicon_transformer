@@ -11,6 +11,8 @@
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
 
+#include <serialization_utils/cereal_json.hpp>
+
 #include <vicon_transformer/errors.hpp>
 #include <vicon_transformer/fmt.hpp>
 
@@ -287,7 +289,7 @@ JsonReceiver::JsonReceiver(const std::filesystem::path& filename)
         throw std::runtime_error(
             fmt::format("Failed to open file {}", filename));
     }
-    frame_ = from_json_stream<ViconFrame>(file);
+    frame_ = serialization_utils::from_json_stream<ViconFrame>(file);
 }
 
 ViconFrame JsonReceiver::read()

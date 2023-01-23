@@ -5,6 +5,8 @@
  */
 #include <gtest/gtest.h>
 
+#include <serialization_utils/cereal_json.hpp>
+
 #include <vicon_transformer/vicon_receiver.hpp>
 
 #include "utils.hpp"
@@ -43,8 +45,8 @@ TEST(ViconFrame, serialize)
     ViconFrame frame1 = receiver.read();
 
     // serialize and deserialize (use json helper functions for convenience)
-    std::string json = vicon_transformer::to_json(frame1);
-    auto frame2 = vicon_transformer::from_json<ViconFrame>(json);
+    std::string json = serialization_utils::to_json(frame1);
+    auto frame2 = serialization_utils::from_json<ViconFrame>(json);
 
     // verify frame gets deserialized to original values
     EXPECT_EQ(frame1.frame_number, frame2.frame_number);

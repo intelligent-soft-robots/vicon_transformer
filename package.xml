@@ -24,6 +24,7 @@ schematypens="http://www.w3.org/2001/XMLSchema"?>
     <depend>cereal</depend>
     <depend>cli_utils</depend>
     <depend>o80</depend>
+    <depend>serialization_utils</depend>
 
     <test_depend>ament_cmake_gmock</test_depend>
     <test_depend>ament_cmake_pytest</test_depend>

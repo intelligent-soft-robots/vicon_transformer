@@ -11,6 +11,7 @@
 #include <pybind11/stl/filesystem.h>
 
 #include <o80/pybind11_helper.hpp>
+#include <serialization_utils/cereal_json.hpp>
 
 #include <vicon_transformer/errors.hpp>
 #include <vicon_transformer/o80_driver.hpp>
@@ -71,8 +72,8 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
         .def_readwrite("is_visible", &vt::SubjectData::is_visible)
         .def_readwrite("global_pose", &vt::SubjectData::global_pose)
         .def_readwrite("quality", &vt::SubjectData::quality);
-    m.def("to_json", &vt::to_json<vt::SubjectData>);
-    m.def("from_json", &vt::from_json<vt::SubjectData>);
+    m.def("to_json", &serialization_utils::to_json<vt::SubjectData>);
+    m.def("from_json", &serialization_utils::from_json<vt::SubjectData>);
 
     py::class_<vt::ViconFrame>(m, "ViconFrame")
         .def(py::init<>())
@@ -89,8 +90,8 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
                 return stream.str();
             },
             py::call_guard<py::gil_scoped_release>());
-    m.def("to_json", &vt::to_json<vt::ViconFrame>);
-    m.def("from_json", &vt::from_json<vt::ViconFrame>);
+    m.def("to_json", &serialization_utils::to_json<vt::ViconFrame>);
+    m.def("from_json", &serialization_utils::from_json<vt::ViconFrame>);
 
     py::class_<vt::ViconReceiverConfig>(m, "ViconReceiverConfig")
         .def(py::init<>())
@@ -99,8 +100,9 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
         .def_readwrite("buffer_size", &vt::ViconReceiverConfig::buffer_size)
         .def_readwrite("filtered_subjects",
                        &vt::ViconReceiverConfig::filtered_subjects);
-    m.def("to_json", &vt::to_json<vt::ViconReceiverConfig>);
-    m.def("from_json", &vt::from_json<vt::ViconReceiverConfig>);
+    m.def("to_json", &serialization_utils::to_json<vt::ViconReceiverConfig>);
+    m.def("from_json",
+          &serialization_utils::from_json<vt::ViconReceiverConfig>);
 
     py::class_<vt::Receiver, std::shared_ptr<vt::Receiver>> PyReceiver(
         m, "Receiver");
@@ -162,8 +164,10 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
                 return stream.str();
             },
             py::call_guard<py::gil_scoped_release>());
-    m.def("to_json", &vt::to_json<pam_vicon_o80::FixedSizeViconFrame>);
-    m.def("from_json", &vt::from_json<pam_vicon_o80::FixedSizeViconFrame>);
+    m.def("to_json",
+          &serialization_utils::to_json<pam_vicon_o80::FixedSizeViconFrame>);
+    m.def("from_json",
+          &serialization_utils::from_json<pam_vicon_o80::FixedSizeViconFrame>);
 
     py::enum_<pam_vicon_o80::Subjects>(m, "Subjects")
         .value("BALL_LAUNCHER", pam_vicon_o80::Subjects::BALL_LAUNCHER)
