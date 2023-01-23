@@ -16,6 +16,7 @@ import signal_handler
 from vicon_transformer.vicon_transformer_bindings import (
     start_standalone,
     stop_standalone,
+    to_json,
     PlaybackReceiver,
     ViconReceiver,
     ViconReceiverConfig,
@@ -48,6 +49,23 @@ def main() -> int:
         action="store_true",
         help="Run in bursting mode.  --frequency is ignored in this case.",
     )
+    parser.add_argument(
+        "--lightweight",
+        action="store_true",
+        help="""Enable 'lightweight mode' of Vicon.  Saves bandwidth by reducing
+            precision of subject poses.
+        """,
+    )
+    parser.add_argument(
+        "--subjects",
+        type=str,
+        nargs="+",
+        metavar="SUBJECT",
+        help="""Filter for listed subjects.  Other subjects are still included in the
+            frame data but without actual data (saves bandwidth).
+        """,
+    )
+
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO)
@@ -56,9 +74,9 @@ def main() -> int:
         receiver = PlaybackReceiver(filename)
     else:
         config = ViconReceiverConfig()
-        # FIXME configure
-        # config.enable_lightweight = args.lightweight
-        # logging.info("Config:\n%s", to_json(config))
+        config.enable_lightweight = args.lightweight
+        config.filtered_subjects = args.subjects or []
+        logging.info("Config:\n%s", to_json(config))
 
         receiver = ViconReceiver(args.host_or_file, config)
         receiver.connect()
