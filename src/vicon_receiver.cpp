@@ -221,22 +221,26 @@ ViconFrame ViconReceiver::read()
         subject_data.is_visible =
             !(global_translation.Occluded or global_rotation.Occluded);
 
-        // NOTE: Vicon provides quaternion in (x, y, z, w) format but Eigen
-        // expects (w, x, y, z).
-        const auto& [qx, qy, qz, qw] = global_rotation.Rotation;
-        Eigen::Quaterniond rotation(qw, qx, qy, qz);
+        if (subject_data.is_visible)
+        {
+            // NOTE: Vicon provides quaternion in (x, y, z, w) format but Eigen
+            // expects (w, x, y, z).
+            const auto& [qx, qy, qz, qw] = global_rotation.Rotation;
+            Eigen::Quaterniond rotation(qw, qx, qy, qz);
 
-        // NOTE: Vicon provides translation in millimetres, so needs to be
-        // converted to metres
-        Eigen::Vector3d translation =
-            Eigen::Map<Eigen::Vector3d>(global_translation.Translation) / 1000;
+            // NOTE: Vicon provides translation in millimetres, so needs to be
+            // converted to metres
+            Eigen::Vector3d translation =
+                Eigen::Map<Eigen::Vector3d>(global_translation.Translation) /
+                1000;
 
-        subject_data.global_pose = Transformation(rotation, translation);
+            subject_data.global_pose = Transformation(rotation, translation);
 
-        // Get the quality of the subject (object) if supported
-        auto quality = client_.GetObjectQuality(subject_name);
-        subject_data.quality =
-            (quality.Result == Result::Success) ? quality.Quality : 0.0;
+            // Get the quality of the subject (object) if supported
+            auto quality = client_.GetObjectQuality(subject_name);
+            subject_data.quality =
+                (quality.Result == Result::Success) ? quality.Quality : 0.0;
+        }
 
         frame.subjects[subject_name] = subject_data;
     }
