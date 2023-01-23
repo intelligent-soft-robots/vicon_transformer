@@ -96,7 +96,9 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
         .def(py::init<>())
         .def_readwrite("enable_lightweight",
                        &vt::ViconReceiverConfig::enable_lightweight)
-        .def_readwrite("buffer_size", &vt::ViconReceiverConfig::buffer_size);
+        .def_readwrite("buffer_size", &vt::ViconReceiverConfig::buffer_size)
+        .def_readwrite("filtered_subjects",
+                       &vt::ViconReceiverConfig::filtered_subjects);
     m.def("to_json", &vt::to_json<vt::ViconReceiverConfig>);
     m.def("from_json", &vt::from_json<vt::ViconReceiverConfig>);
 
@@ -126,9 +128,6 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
              py::call_guard<py::gil_scoped_release>())
         .def("print_latency_info",
              &vt::ViconReceiver::print_latency_info,
-             py::call_guard<py::gil_scoped_release>())
-        .def("filter_subjects",
-             &vt::ViconReceiver::filter_subjects,
              py::call_guard<py::gil_scoped_release>());
     py::class_<vt::PlaybackReceiver,
                std::shared_ptr<vt::PlaybackReceiver>,

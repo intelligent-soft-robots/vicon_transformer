@@ -124,6 +124,7 @@ int main(int argc, char *argv[])
         // argument is a hostname/IP
         vicon_transformer::ViconReceiverConfig config;
         config.enable_lightweight = args.lightweight;
+        config.filtered_subjects = args.filtered_subjects;
 
         receiver = std::make_unique<vicon_transformer::ViconReceiver>(
             args.host_or_file, config, logger);
@@ -131,7 +132,6 @@ int main(int argc, char *argv[])
         auto ptr =
             static_cast<vicon_transformer::ViconReceiver *>(receiver.get());
         ptr->connect();
-        ptr->filter_subjects(args.filtered_subjects);
         ptr->print_info();
     }
     else

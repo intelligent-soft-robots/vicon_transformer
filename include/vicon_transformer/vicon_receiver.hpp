@@ -67,10 +67,27 @@ struct ViconReceiverConfig
      */
     unsigned int buffer_size = 0;
 
+    /**
+     * @brief Filter for the listed subjects to save bandwidth.
+     *
+     * If set, pose information is only provided for the subjects whose name is
+     * included in the list.  This can be used to reduce the required bandwidth
+     * of the connection to the Vicon server.
+     *
+     * Note that other subjects are still listed in the frame data but marked
+     * as not visible.
+     *
+     * If left empty, no filtering is done (i.e. all subjects are included in
+     * the frame data).
+     */
+    std::vector<std::string> filtered_subjects;
+
     template <class Archive>
     void serialize(Archive& archive)
     {
-        archive(CEREAL_NVP(enable_lightweight), CEREAL_NVP(buffer_size));
+        archive(CEREAL_NVP(enable_lightweight),
+                CEREAL_NVP(buffer_size),
+                CEREAL_NVP(filtered_subjects));
     }
 };
 
@@ -131,19 +148,6 @@ public:
     //! Print detailed latency information.
     void print_latency_info() const;
 
-    /**
-     * @brief Only receive data for the listed subjects.
-     *
-     * If set, pose data is only provided for the listed subjects.  Note that
-     * other subjects will still be included in the frame data but their pose
-     * will not be set.
-     * This can be used to reduce the required bandwidth, if only a few of the
-     * subjects are of interest.
-     *
-     * @param subjects List of subject names.
-     */
-    void filter_subjects(const std::vector<std::string> subjects);
-
 private:
     std::shared_ptr<spdlog::logger> log_;
     ViconDataStreamSDK::CPP::Client client_;
@@ -152,6 +156,19 @@ private:
     const ViconReceiverConfig config_;
 
     void client_get_frame();
+
+    /**
+     * @brief Only receive data for the listed subjects.
+     *
+     * If set, pose data is only provided for the listed subjects.  Note that
+     * other subjects will still be included in the frame data but their pose
+     * will not be set and they will be marked as not visible.
+     * This can be used to reduce the required bandwidth, if only a few of the
+     * subjects are of interest.
+     *
+     * @param subjects List of subject names.
+     */
+    void filter_subjects(const std::vector<std::string>& subjects);
 };
 
 /**

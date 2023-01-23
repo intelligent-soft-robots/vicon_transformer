@@ -134,6 +134,12 @@ void ViconReceiver::connect()
         log_->info("Set client buffer size to {}", config_.buffer_size);
         client_.SetBufferSize(config_.buffer_size);
     }
+
+    // Apply subject filter
+    if (!config_.filtered_subjects.empty())
+    {
+        filter_subjects(config_.filtered_subjects);
+    }
 }
 
 void ViconReceiver::disconnect()
@@ -252,7 +258,7 @@ void ViconReceiver::print_latency_info() const
     fmt::print("\n");
 }
 
-void ViconReceiver::filter_subjects(const std::vector<std::string> subjects)
+void ViconReceiver::filter_subjects(const std::vector<std::string>& subjects)
 {
     // There needs to be a previously loaded frame in order to add subjects
     // to the filter.  Thus, check if there already is one and try to get
