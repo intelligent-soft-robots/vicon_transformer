@@ -18,6 +18,7 @@
 #include <vicon_transformer/o80_standalone.hpp>
 #include <vicon_transformer/transform.hpp>
 #include <vicon_transformer/vicon_receiver.hpp>
+#include <vicon_transformer/vicon_transformer.hpp>
 
 #include <vicon_transformer/pam_vicon_o80.hpp>
 
@@ -30,6 +31,10 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
         m, "NotConnectedError", PyExc_RuntimeError);
     py::register_exception<vt::BadResultError>(
         m, "BadResultError", PyExc_RuntimeError);
+    py::register_exception<vt::SubjectNotVisibleError>(
+        m, "SubjectNotVisibleError", PyExc_RuntimeError);
+    py::register_exception<vt::UnknownSubjectError>(
+        m, "UnknownSubjectError", PyExc_RuntimeError);
 
     // TODO: add unit tests for bindings of Transformation
     py::class_<vt::Transformation>(m, "Transformation")
@@ -139,6 +144,34 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
              py::call_guard<py::gil_scoped_release>())
         .def("read",
              &vt::PlaybackReceiver::read,
+             py::call_guard<py::gil_scoped_release>());
+
+    py::class_<vt::ViconTransformer>(m, "ViconTransformer")
+        .def(py::init<std::shared_ptr<vt::Receiver>, const std::string&>(),
+             py::call_guard<py::gil_scoped_release>())
+        .def("update",
+             &vt::ViconTransformer::update,
+             py::call_guard<py::gil_scoped_release>())
+        .def("set_frame",
+             &vt::ViconTransformer::set_frame,
+             py::call_guard<py::gil_scoped_release>())
+        .def("wait_for_origin_subject_data",
+             &vt::ViconTransformer::wait_for_origin_subject_data,
+             py::call_guard<py::gil_scoped_release>())
+        .def("get_timestamp_ns",
+             &vt::ViconTransformer::get_timestamp_ns,
+             py::call_guard<py::gil_scoped_release>())
+        .def("get_subject_names",
+             &vt::ViconTransformer::get_subject_names,
+             py::call_guard<py::gil_scoped_release>())
+        .def("is_visible",
+             &vt::ViconTransformer::is_visible,
+             py::call_guard<py::gil_scoped_release>())
+        .def("get_transform",
+             &vt::ViconTransformer::get_transform,
+             py::call_guard<py::gil_scoped_release>())
+        .def("get_frame",
+             &vt::ViconTransformer::get_frame,
              py::call_guard<py::gil_scoped_release>());
 
     // -----------------------------------------

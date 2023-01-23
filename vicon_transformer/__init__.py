@@ -5,9 +5,12 @@ from .vicon_transformer_bindings import (
     BadResultError,
     NotConnectedError,
     SubjectData,
+    SubjectNotVisibleError,
+    UnknownSubjectError,
     ViconFrame,
     ViconReceiver as _ViconReceiver,
     ViconReceiverConfig,
+    ViconTransformer,
     to_json,
     from_json,
 )
@@ -26,15 +29,18 @@ class ViconReceiver(_ViconReceiver):
 
 
 __all__ = (
-    "ViconJsonZmq",
-    "ViconJsonFile",
-    "ZmqJsonReceiver",
     "BadResultError",
     "NotConnectedError",
     "SubjectData",
+    "SubjectNotVisibleError",
+    "UnknownSubjectError",
     "ViconFrame",
-    "ViconReceiverConfig",
+    "ViconJsonFile",
+    "ViconJsonZmq",
     "ViconReceiver",
+    "ViconReceiverConfig",
+    "ViconTransformer",
+    "ZmqJsonReceiver",
     "to_json",
     "from_json",
 )
