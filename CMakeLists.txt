@@ -116,7 +116,9 @@ if(BUILD_TESTING)
     find_package(ament_cmake_gmock REQUIRED)
 
     # Python tests
-    ament_add_pytest_test(test_transform tests/test_transform.py
+    ament_add_pytest_test(test_transform_py tests/test_transform.py
+        WORKING_DIRECTORY /tmp)
+    ament_add_pytest_test(test_vicon_transformer_py tests/test_vicon_transformer.py
         WORKING_DIRECTORY /tmp)
 
     # C++ tests
@@ -131,23 +133,23 @@ if(BUILD_TESTING)
         serialization_utils::serialization_utils
     )
 
-    ament_add_gmock(test_vicon_receiver
+    ament_add_gmock(test_vicon_receiver_cpp
         tests/test_vicon_receiver.cpp
     )
-    target_include_directories(test_vicon_receiver PRIVATE include)
-    target_link_libraries(test_vicon_receiver vicon_receiver)
-    target_compile_definitions(test_vicon_receiver PRIVATE
+    target_include_directories(test_vicon_receiver_cpp PRIVATE include)
+    target_link_libraries(test_vicon_receiver_cpp vicon_receiver)
+    target_compile_definitions(test_vicon_receiver_cpp PRIVATE
         TEST_DATA_FILE_DIR=${TEST_DATA_FILE_DIR})
 
-    ament_add_gmock(test_vicon_transformer
+    ament_add_gmock(test_vicon_transformer_cpp
         tests/test_vicon_transformer.cpp
     )
-    target_include_directories(test_vicon_transformer PRIVATE include)
-    target_link_libraries(test_vicon_transformer
+    target_include_directories(test_vicon_transformer_cpp PRIVATE include)
+    target_link_libraries(test_vicon_transformer_cpp
         vicon_transformer
         fmt::fmt
     )
-    target_compile_definitions(test_vicon_transformer PRIVATE
+    target_compile_definitions(test_vicon_transformer_cpp PRIVATE
         TEST_DATA_FILE_DIR=${TEST_DATA_FILE_DIR})
 
 endif()
