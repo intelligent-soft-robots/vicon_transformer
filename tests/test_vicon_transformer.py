@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: BSD-3-Clause
 """Test Python bindings of ViconTransformer"""
 import pathlib
 

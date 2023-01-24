@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-3-Clause
+
 /**
  * @file
  * @copyright 2023 Max Planck Gesellschaft.  All rights reserved.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-3-Clause
+
 /**
  * @file Python bindings of the relevant C++ classes/functions.
  * @copyright 2022, Max Planck Gesellschaft.  All rights reserved.

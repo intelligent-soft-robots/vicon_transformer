@@ -9,7 +9,7 @@ schematypens="http://www.w3.org/2001/XMLSchema"?>
     <description>uses vicon to find transforms of table and robot</description>
     <author email="dbuechler@tuebingen.mpg.de">Dieter Buechler</author>
     <maintainer email="dbuechler@tuebingen.mpg.de">Dieter Buechler</maintainer>
-    <license>BSD 3-Clause</license>
+    <license>BSD-3-Clause</license>
 
     <buildtool_depend>ament_cmake</buildtool_depend>
 

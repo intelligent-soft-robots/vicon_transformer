@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-3-Clause
+
 #include <vicon_transformer/transform.hpp>
 
 namespace vicon_transformer

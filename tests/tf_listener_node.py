@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-3-Clause
+"""Simple node for testing tf."""
 import numpy as np
 
 import rclpy

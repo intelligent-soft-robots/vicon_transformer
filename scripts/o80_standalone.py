@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: BSD-3-Clause
 """Run o80 Standalone instance for Vicon data.
 
 This serves as backend to which a FrontEnd instance can connect by using the same

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: BSD-3-Clause
 """Connect to a shared memory set up by an o80 back end and print the received data.
 
 The back end is expected to be run in a separate process (e.g. by

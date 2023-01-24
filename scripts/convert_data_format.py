@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: BSD-3-Clause
 """Convert a recorded pickle file of an older data format to the newest one.
 
 The structure in which the Vicon data is provided changed in the past.  This script

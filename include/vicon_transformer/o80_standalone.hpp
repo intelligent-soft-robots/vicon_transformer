@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-3-Clause
+
 /**
  * @file
  * @brief o80 Standalone implementation for Vicon system.

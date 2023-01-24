@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-3-Clause
+
 #include <vicon_transformer/vicon_receiver.hpp>
 
 #include <unistd.h>

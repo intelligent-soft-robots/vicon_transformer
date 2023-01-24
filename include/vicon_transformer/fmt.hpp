@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-3-Clause
+
 /**
  * @file
  * @brief fmt::formatter implementations for various types.

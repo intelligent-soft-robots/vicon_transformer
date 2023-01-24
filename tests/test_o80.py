@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: BSD-3-Clause
 """Test o80 driver and standalone."""
 import pathlib
 
