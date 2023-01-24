@@ -5,7 +5,7 @@ schematypens="http://www.w3.org/2001/XMLSchema"?>
 
 <package format="3">
     <name>vicon_transformer</name>
-    <version>1.0.0</version>
+    <version>0.9.0</version>
     <description>uses vicon to find transforms of table and robot</description>
     <author email="dbuechler@tuebingen.mpg.de">Dieter Buechler</author>
     <maintainer email="dbuechler@tuebingen.mpg.de">Dieter Buechler</maintainer>
