@@ -12,12 +12,13 @@ import typing
 
 import signal_handler
 
-from vicon_transformer.vicon_transformer_bindings import (
+from vicon_transformer.pam_vicon_o80 import (
     FrontEnd,
     FixedSizeViconFrame,
     Subjects,
     get_subject_names,
 )
+
 
 DEFAULT_SEGMENT_ID = "vicon"
 

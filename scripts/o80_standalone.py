@@ -14,12 +14,14 @@ import o80
 import signal_handler
 
 from vicon_transformer.vicon_transformer_bindings import (
-    start_standalone,
-    stop_standalone,
-    to_json,
     PlaybackReceiver,
     ViconReceiver,
     ViconReceiverConfig,
+    to_json,
+)
+from vicon_transformer.pam_vicon_o80 import (
+    start_standalone,
+    stop_standalone,
 )
 
 

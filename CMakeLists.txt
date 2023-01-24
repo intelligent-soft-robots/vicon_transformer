@@ -84,7 +84,16 @@ add_pybind11_module(${PROJECT_NAME}_bindings srcpy/bindings.cpp
     LINK_LIBRARIES 
         vicon_receiver
         vicon_transformer
+        serialization_utils::serialization_utils
         o80::o80
+)
+
+add_pybind11_module(pam_vicon_o80 srcpy/pam_vicon_o80.cpp
+    LINK_LIBRARIES 
+        vicon_receiver
+        vicon_transformer
+        o80::o80
+        serialization_utils::serialization_utils
 )
 
 

@@ -7,8 +7,10 @@ import pytest
 import o80
 
 from vicon_transformer.vicon_transformer_bindings import (
-    FrontEnd,
     JsonReceiver,
+)
+from vicon_transformer.pam_vicon_o80 import (
+    FrontEnd,
     Subjects,
     start_standalone,
     stop_standalone,
