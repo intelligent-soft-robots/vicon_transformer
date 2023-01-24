@@ -136,6 +136,15 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
         .def("print_latency_info",
              &vt::ViconReceiver::print_latency_info,
              py::call_guard<py::gil_scoped_release>());
+    py::class_<vt::JsonReceiver,
+               std::shared_ptr<vt::JsonReceiver>,
+               vt::Receiver>(m, "JsonReceiver")
+        .def(py::init<const std::filesystem::path&>(),
+             py::arg("filename"),
+             py::call_guard<py::gil_scoped_release>())
+        .def("read",
+             &vt::JsonReceiver::read,
+             py::call_guard<py::gil_scoped_release>());
     py::class_<vt::PlaybackReceiver,
                std::shared_ptr<vt::PlaybackReceiver>,
                vt::Receiver>(m, "PlaybackReceiver")
