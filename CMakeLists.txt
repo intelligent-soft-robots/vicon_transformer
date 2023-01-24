@@ -120,6 +120,8 @@ if(BUILD_TESTING)
         WORKING_DIRECTORY /tmp)
     ament_add_pytest_test(test_vicon_transformer_py tests/test_vicon_transformer.py
         WORKING_DIRECTORY /tmp)
+    ament_add_pytest_test(test_o80_py tests/test_o80.py
+        WORKING_DIRECTORY /tmp)
 
     # C++ tests
     ament_add_gmock(test_transform_cpp
