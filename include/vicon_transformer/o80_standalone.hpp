@@ -13,7 +13,7 @@
 
 namespace vicon_transformer
 {
-constexpr int STANDALONE_QUEUE_SIZE = 50000;  // TODO: what is a good value?
+constexpr int STANDALONE_QUEUE_SIZE = 50000;
 //! Number of actuators (zero, as the Vicon system does not have actuation).
 constexpr int STANDALONE_N_ACTUATORS = 0;
 
