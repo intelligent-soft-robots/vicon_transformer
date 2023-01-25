@@ -39,13 +39,11 @@ def main():
 
     config = ViconReceiverConfig()
     config.enable_lightweight = args.lightweight
+    config.filtered_subjects = args.subjects or []
 
     print("Config:\n{}\n".format(to_json(config)))
 
     with ViconReceiver(args.vicon_host, config) as receiver:
-        if args.subjects:
-            receiver.filter_subjects(args.subjects)
-
         receiver.print_info()
 
         print("=======================================")

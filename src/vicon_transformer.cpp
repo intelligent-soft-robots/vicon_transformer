@@ -117,7 +117,20 @@ bool ViconTransformer::is_visible(const std::string &subject_name) const
 Transformation ViconTransformer::get_transform(
     const std::string &subject_name) const
 {
-    return origin_tf_ * get_raw_transform(subject_name);
+    auto tf = get_raw_transform(subject_name);
+    if (is_visible(subject_name))
+    {
+        return origin_tf_ * tf;
+    }
+    else
+    {
+        // If subject is not visible, its pose should be set to identity.
+        // Applying the origin transform would result in something that looks
+        // like a legit pose while it is actually just garbage.  Thus simply
+        // forward the identity pose instead, which makes it more obvious that
+        // the subject is not actually visible when looking at the data.
+        return tf;
+    }
 }
 
 Transformation ViconTransformer::get_raw_transform(
@@ -152,7 +165,11 @@ ViconFrame ViconTransformer::get_frame() const
 
     for (auto &[name, data] : transformed_frame.subjects)
     {
-        data.global_pose = origin_tf_ * data.global_pose;
+        // only apply origin transform if the subject is actually visible
+        if (data.is_visible)
+        {
+            data.global_pose = origin_tf_ * data.global_pose;
+        }
     }
 
     return transformed_frame;

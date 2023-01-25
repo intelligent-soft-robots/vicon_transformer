@@ -21,6 +21,7 @@ find_package(mpi_cmake_modules REQUIRED)
 
 find_package(cli_utils REQUIRED)
 find_package(o80 REQUIRED)
+find_package(serialization_utils REQUIRED)
 
 find_package(cereal REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -37,6 +38,7 @@ ament_python_install_package(${PROJECT_NAME} PACKAGE_DIR ${PROJECT_NAME})
 add_library(vicon_receiver
     src/vicon_receiver.cpp
     src/transform.cpp
+    src/types.cpp
 )
 target_include_directories(vicon_receiver PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -48,6 +50,7 @@ target_link_libraries(vicon_receiver
     fmt::fmt
     spdlog::spdlog
     vicon-datastream-sdk::ViconDataStreamSDK_CPP
+    serialization_utils::serialization_utils
 )
 
 
@@ -128,6 +131,7 @@ if(BUILD_TESTING)
     target_link_libraries(test_transform_cpp
         Eigen3::Eigen
         fmt::fmt
+        serialization_utils::serialization_utils
     )
 
     ament_add_gmock(test_vicon_receiver

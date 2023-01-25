@@ -11,6 +11,8 @@
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
 
+#include <serialization_utils/cereal_json.hpp>
+
 #include <vicon_transformer/errors.hpp>
 #include <vicon_transformer/fmt.hpp>
 
@@ -21,34 +23,6 @@ using Result = ViconDataStreamSDK::CPP::Result::Enum;
 
 namespace vicon_transformer
 {
-// FIXME: this is not the right place for the operator<< overloads
-std::ostream& operator<<(std::ostream& os, const ViconFrame& vf)
-{
-    fmt::print(os, "Frame Number: {}\n", vf.frame_number);
-    fmt::print(os, "Frame Rate: {}\n", vf.frame_rate);
-    fmt::print(os, "Latency: {}\n", vf.latency);
-    fmt::print(os, "Timestamp: {}\n", vf.time_stamp);
-
-    fmt::print(os, "Subjects ({}):\n", vf.subjects.size());
-    for (auto const& [name, data] : vf.subjects)
-    {
-        fmt::print(os, "  {}\n", name);
-        fmt::print(os, "    Visible: {}\n", data.is_visible);
-        fmt::print(os,
-                   "    Translation: {}\n",
-                   data.global_pose.translation.transpose());
-        fmt::print(os,
-                   "    Rotation: ({}, {}, {}, {})\n",
-                   data.global_pose.rotation.x(),
-                   data.global_pose.rotation.y(),
-                   data.global_pose.rotation.z(),
-                   data.global_pose.rotation.w());
-        fmt::print(os, "    Quality: {}\n", data.quality);
-    }
-
-    return os;
-}
-
 ViconReceiver::ViconReceiver(const std::string& host_name,
                              const ViconReceiverConfig& config,
                              std::shared_ptr<spdlog::logger> logger)
@@ -134,6 +108,12 @@ void ViconReceiver::connect()
         log_->info("Set client buffer size to {}", config_.buffer_size);
         client_.SetBufferSize(config_.buffer_size);
     }
+
+    // Apply subject filter
+    if (!config_.filtered_subjects.empty())
+    {
+        filter_subjects(config_.filtered_subjects);
+    }
 }
 
 void ViconReceiver::disconnect()
@@ -215,22 +195,26 @@ ViconFrame ViconReceiver::read()
         subject_data.is_visible =
             !(global_translation.Occluded or global_rotation.Occluded);
 
-        // NOTE: Vicon provides quaternion in (x, y, z, w) format but Eigen
-        // expects (w, x, y, z).
-        const auto& [qx, qy, qz, qw] = global_rotation.Rotation;
-        Eigen::Quaterniond rotation(qw, qx, qy, qz);
+        if (subject_data.is_visible)
+        {
+            // NOTE: Vicon provides quaternion in (x, y, z, w) format but Eigen
+            // expects (w, x, y, z).
+            const auto& [qx, qy, qz, qw] = global_rotation.Rotation;
+            Eigen::Quaterniond rotation(qw, qx, qy, qz);
 
-        // NOTE: Vicon provides translation in millimetres, so needs to be
-        // converted to metres
-        Eigen::Vector3d translation =
-            Eigen::Map<Eigen::Vector3d>(global_translation.Translation) / 1000;
+            // NOTE: Vicon provides translation in millimetres, so needs to be
+            // converted to metres
+            Eigen::Vector3d translation =
+                Eigen::Map<Eigen::Vector3d>(global_translation.Translation) /
+                1000;
 
-        subject_data.global_pose = Transformation(rotation, translation);
+            subject_data.global_pose = Transformation(rotation, translation);
 
-        // Get the quality of the subject (object) if supported
-        auto quality = client_.GetObjectQuality(subject_name);
-        subject_data.quality =
-            (quality.Result == Result::Success) ? quality.Quality : 0.0;
+            // Get the quality of the subject (object) if supported
+            auto quality = client_.GetObjectQuality(subject_name);
+            subject_data.quality =
+                (quality.Result == Result::Success) ? quality.Quality : 0.0;
+        }
 
         frame.subjects[subject_name] = subject_data;
     }
@@ -252,7 +236,7 @@ void ViconReceiver::print_latency_info() const
     fmt::print("\n");
 }
 
-void ViconReceiver::filter_subjects(const std::vector<std::string> subjects)
+void ViconReceiver::filter_subjects(const std::vector<std::string>& subjects)
 {
     // There needs to be a previously loaded frame in order to add subjects
     // to the filter.  Thus, check if there already is one and try to get
@@ -305,7 +289,7 @@ JsonReceiver::JsonReceiver(const std::filesystem::path& filename)
         throw std::runtime_error(
             fmt::format("Failed to open file {}", filename));
     }
-    frame_ = from_json_stream<ViconFrame>(file);
+    frame_ = serialization_utils::from_json_stream<ViconFrame>(file);
 }
 
 ViconFrame JsonReceiver::read()

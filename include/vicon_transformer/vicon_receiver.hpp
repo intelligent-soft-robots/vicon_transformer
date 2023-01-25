@@ -15,40 +15,6 @@
 
 namespace vicon_transformer
 {
-// TODO: move to a more appropriate place (maybe serialization_utils?)
-template <typename T>
-void to_json_stream(T& obj, std::ostream& stream)
-{
-    cereal::JSONOutputArchive json_out(stream);
-    obj.serialize(json_out);
-}
-
-template <typename T>
-T from_json_stream(std::istream& stream)
-{
-    T obj;
-    {
-        cereal::JSONInputArchive json_in(stream);
-        obj.serialize(json_in);
-    }
-    return obj;
-}
-
-template <typename T>
-std::string to_json(T& obj)
-{
-    std::stringstream stream;
-    to_json_stream(obj, stream);
-    return stream.str();
-}
-
-template <typename T>
-T from_json(const std::string& json_str)
-{
-    std::stringstream stream(json_str);
-    return from_json_stream<T>(stream);
-}
-
 //! Configuration structure for the ViconReceiver class.
 struct ViconReceiverConfig
 {
@@ -67,10 +33,27 @@ struct ViconReceiverConfig
      */
     unsigned int buffer_size = 0;
 
+    /**
+     * @brief Filter for the listed subjects to save bandwidth.
+     *
+     * If set, pose information is only provided for the subjects whose name is
+     * included in the list.  This can be used to reduce the required bandwidth
+     * of the connection to the Vicon server.
+     *
+     * Note that other subjects are still listed in the frame data but marked
+     * as not visible.
+     *
+     * If left empty, no filtering is done (i.e. all subjects are included in
+     * the frame data).
+     */
+    std::vector<std::string> filtered_subjects;
+
     template <class Archive>
     void serialize(Archive& archive)
     {
-        archive(CEREAL_NVP(enable_lightweight), CEREAL_NVP(buffer_size));
+        archive(CEREAL_NVP(enable_lightweight),
+                CEREAL_NVP(buffer_size),
+                CEREAL_NVP(filtered_subjects));
     }
 };
 
@@ -131,19 +114,6 @@ public:
     //! Print detailed latency information.
     void print_latency_info() const;
 
-    /**
-     * @brief Only receive data for the listed subjects.
-     *
-     * If set, pose data is only provided for the listed subjects.  Note that
-     * other subjects will still be included in the frame data but their pose
-     * will not be set.
-     * This can be used to reduce the required bandwidth, if only a few of the
-     * subjects are of interest.
-     *
-     * @param subjects List of subject names.
-     */
-    void filter_subjects(const std::vector<std::string> subjects);
-
 private:
     std::shared_ptr<spdlog::logger> log_;
     ViconDataStreamSDK::CPP::Client client_;
@@ -152,6 +122,19 @@ private:
     const ViconReceiverConfig config_;
 
     void client_get_frame();
+
+    /**
+     * @brief Only receive data for the listed subjects.
+     *
+     * If set, pose data is only provided for the listed subjects.  Note that
+     * other subjects will still be included in the frame data but their pose
+     * will not be set and they will be marked as not visible.
+     * This can be used to reduce the required bandwidth, if only a few of the
+     * subjects are of interest.
+     *
+     * @param subjects List of subject names.
+     */
+    void filter_subjects(const std::vector<std::string>& subjects);
 };
 
 /**
