@@ -20,6 +20,7 @@ find_package(ament_cmake REQUIRED)
 find_package(mpi_cmake_modules REQUIRED)
 
 find_package(cli_utils REQUIRED)
+find_package(o80 REQUIRED)
 
 find_package(cereal REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -79,6 +80,8 @@ target_link_libraries(vicon_record
 add_pybind11_module(${PROJECT_NAME}_bindings srcpy/bindings.cpp
     LINK_LIBRARIES 
         vicon_receiver
+        vicon_transformer
+        o80::o80
 )
 
 
@@ -88,6 +91,7 @@ install(
     TARGETS
         vicon_receiver
         vicon_transformer
+
         vicon_print_data_cpp
         vicon_record
     EXPORT export_${PROJECT_NAME}

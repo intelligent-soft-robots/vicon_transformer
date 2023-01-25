@@ -49,7 +49,7 @@ class Args : public cli_utils::ProgramOptions
 public:
     std::string host_or_file = "localhost:801";
     bool lightweight = false;
-    bool only_once = false;
+    int num_frames = 0;
     bool json_output = false;
     std::vector<std::string> filtered_subjects;
 
@@ -77,8 +77,9 @@ Usage:  vicon_print_data_cpp <vicon-host-name> [options]
              "Only receive data for the listed subjects.")
             ("lightweight",
              "Enable lightweight frames (needs less bandwidth at the cost of lower precision).")
-            ("once",
-             "Only print one frame.")
+            ("num,n",
+             po::value<int>(&num_frames),
+             "Only print the specified number of frames.")
             ("json",
              "Produce JSON-formatted output.")
             ;
@@ -91,7 +92,6 @@ Usage:  vicon_print_data_cpp <vicon-host-name> [options]
     void postprocess(const boost::program_options::variables_map &args) override
     {
         lightweight = args.count("lightweight") > 0;
-        only_once = args.count("once") > 0;
         json_output = args.count("json") > 0;
     }
 };
@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
     fmt::print("\n==============================\n\n");
 
     //  Loop until a key is pressed
-    while (true)
+    for (int i = 0; args.num_frames == 0 || i < args.num_frames; i++)
     {
         // read the frame
         vicon_transformer::ViconFrame frame;
@@ -188,12 +188,6 @@ int main(int argc, char *argv[])
         else
         {
             fmt::print("{}\n\n", frame);
-        }
-
-        // exit if --once was set
-        if (args.only_once)
-        {
-            break;
         }
     }
 

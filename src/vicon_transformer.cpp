@@ -1,6 +1,7 @@
 /**
  * @copyright 2022, Max Planck Gesellschaft.  All rights reserved.
  */
+#include <cereal/archives/binary.hpp>
 #include <vicon_transformer/vicon_transformer.hpp>
 
 #include <spdlog/spdlog.h>
@@ -26,6 +27,7 @@ ViconTransformer::ViconTransformer(std::shared_ptr<Receiver> receiver,
         if (!(log_ = spdlog::get(name)))
         {
             log_ = spdlog::stderr_color_mt(name);
+            log_->set_level(spdlog::level::debug);
         }
     }
 }
@@ -54,6 +56,33 @@ void ViconTransformer::set_frame(const ViconFrame &frame)
     if (!origin_subject_name_.empty())
     {
         origin_tf_ = get_raw_transform(origin_subject_name_).inverse();
+    }
+}
+
+void ViconTransformer::wait_for_origin_subject_data()
+{
+    // nothing to wait for if no origin subject is set
+    if (origin_subject_name_.empty())
+    {
+        log_->debug("Do not wait for origin pose as no origin subject is set.");
+        return;
+    }
+
+    log_->info("Wait for valid origin subject pose...");
+    while (true)
+    {
+        log_->debug("get new frame");
+        try
+        {
+            update();
+            log_->info("Got origin subject pose.");
+            // break loop if update was successful
+            break;
+        }
+        catch (const SubjectNotVisibleError &)
+        {
+            // do nothing
+        }
     }
 }
 

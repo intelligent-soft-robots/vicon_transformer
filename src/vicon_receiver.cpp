@@ -21,6 +21,7 @@ using Result = ViconDataStreamSDK::CPP::Result::Enum;
 
 namespace vicon_transformer
 {
+// FIXME: this is not the right place for the operator<< overloads
 std::ostream& operator<<(std::ostream& os, const ViconFrame& vf)
 {
     fmt::print(os, "Frame Number: {}\n", vf.frame_number);
