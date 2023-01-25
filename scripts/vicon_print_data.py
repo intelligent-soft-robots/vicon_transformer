@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: BSD-3-Clause
 """Get data from Vicon server and forward with ZMQ."""
 import argparse
 import sys

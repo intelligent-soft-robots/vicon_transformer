@@ -13,7 +13,7 @@ name: Build and Test
 on:
   push:
     branches:
-     - master
+     - main
 
 jobs:
   build_and_test:

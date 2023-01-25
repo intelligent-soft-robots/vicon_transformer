@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: BSD-3-Clause
 """ROS Node that publishes TF transforms for Vicon objects."""
 import rclpy
 from geometry_msgs.msg import TransformStamped

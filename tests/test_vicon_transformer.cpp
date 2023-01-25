@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-3-Clause
+
 /**
  * @file
  * @brief Tests for vicon_transformer.hpp

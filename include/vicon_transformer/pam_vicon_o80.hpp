@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-3-Clause
+
 /**
  * @file
  * @brief PAM-Vicon specific settings for the o80 driver.

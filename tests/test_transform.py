@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-3-Clause
+"""Test the Transformation class."""
 import numpy as np
 
 from vicon_transformer.transform import Transformation, Rotation

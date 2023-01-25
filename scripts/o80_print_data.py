@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: BSD-3-Clause
 """Connect to a shared memory set up by an o80 back end and print the received data.
 
 The back end is expected to be run in a separate process (e.g. by
@@ -12,12 +13,13 @@ import typing
 
 import signal_handler
 
-from vicon_transformer.vicon_transformer_bindings import (
+from vicon_transformer.pam_vicon_o80 import (
     FrontEnd,
     FixedSizeViconFrame,
     Subjects,
     get_subject_names,
 )
+
 
 DEFAULT_SEGMENT_ID = "vicon"
 

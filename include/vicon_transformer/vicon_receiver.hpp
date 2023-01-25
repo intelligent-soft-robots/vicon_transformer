@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-3-Clause
+
 /**
  * @file
  * @copyright 2022, Max Planck Gesellschaft.  All rights reserved.
@@ -8,8 +10,9 @@
 
 #include <spdlog/logger.h>
 #include <vicon-datastream-sdk/DataStreamClient.h>
-#include <cereal/archives/json.hpp>
 #include <cereal/cereal.hpp>
+#include <cereal/types/string.hpp>
+#include <cereal/types/vector.hpp>
 
 #include "types.hpp"
 
