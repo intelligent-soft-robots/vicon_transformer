@@ -1,18 +1,26 @@
+"""ROS Node that publishes TF transforms for Vicon objects."""
 import rclpy
 from geometry_msgs.msg import TransformStamped
 from rclpy.node import Node
 from tf2_ros import TransformBroadcaster
 
-from vicon_transformer import ViconJsonZmq
-from vicon_transformer.errors import SubjectNotPresentError
+from vicon_transformer import (
+    ViconReceiver,
+    ViconReceiverConfig,
+    ViconTransformer,
+    SubjectNotVisibleError,
+)
 
 
 class FramePublisher(Node):
     def __init__(self):
         super().__init__("vicon_tf_publisher")
 
-        self.zmq_address = (
-            self.declare_parameter("zmq_address", "tcp://localhost:5555")
+        self.vicon_host = (
+            self.declare_parameter("vicon_host").get_parameter_value().string_value
+        )
+        self.origin_subject = (
+            self.declare_parameter("origin_subject", "rll_ping_base")
             .get_parameter_value()
             .string_value
         )
@@ -26,45 +34,49 @@ class FramePublisher(Node):
         self.tf_broadcaster = TransformBroadcaster(self)
 
     def run(self):
-        vicon = ViconJsonZmq(self.zmq_address)
+        config = ViconReceiverConfig()
 
-        while rclpy.ok():
-            vicon.read()
+        with ViconReceiver(self.vicon_host, config) as receiver:
+            vicon = ViconTransformer(receiver, self.origin_subject)
+            vicon.wait_for_origin_subject_data()
 
-            for subject_name in vicon.get_subject_names():
-                try:
-                    transform = vicon.get_T(subject_name)
-                except SubjectNotPresentError:
-                    # skip the subject if it is not present
-                    continue
+            while rclpy.ok():
+                vicon.update()
 
-                tf_msg = TransformStamped()
+                for subject_name in vicon.get_subject_names():
+                    try:
+                        transform = vicon.get_transform(subject_name)
+                    except SubjectNotVisibleError:
+                        # skip the subject if it is not present
+                        continue
 
-                if self.use_wall_time:
-                    tf_msg.header.stamp = self.get_clock().now().to_msg()
-                else:
-                    timestamp = vicon.get_timestamp()
-                    tf_msg.header.stamp.sec = int(timestamp)
-                    tf_msg.header.stamp.nanosec = int((timestamp % 1) * 1e9)
+                    tf_msg = TransformStamped()
 
-                tf_msg.header.frame_id = "world"
-                tf_msg.child_frame_id = subject_name
+                    if self.use_wall_time:
+                        tf_msg.header.stamp = self.get_clock().now().to_msg()
+                    else:
+                        timestamp_s = vicon.get_timestamp_ns() / 1e9
+                        tf_msg.header.stamp.sec = int(timestamp_s)
+                        tf_msg.header.stamp.nanosec = int((timestamp_s % 1) * 1e9)
 
-                (
-                    tf_msg.transform.translation.x,
-                    tf_msg.transform.translation.y,
-                    tf_msg.transform.translation.z,
-                ) = transform.translation
+                    tf_msg.header.frame_id = "world"
+                    tf_msg.child_frame_id = subject_name
 
-                (
-                    tf_msg.transform.rotation.x,
-                    tf_msg.transform.rotation.y,
-                    tf_msg.transform.rotation.z,
-                    tf_msg.transform.rotation.w,
-                ) = transform.rotation.as_quat()
+                    (
+                        tf_msg.transform.translation.x,
+                        tf_msg.transform.translation.y,
+                        tf_msg.transform.translation.z,
+                    ) = transform.translation
 
-                # Send the transformation
-                self.tf_broadcaster.sendTransform(tf_msg)
+                    (
+                        tf_msg.transform.rotation.x,
+                        tf_msg.transform.rotation.y,
+                        tf_msg.transform.rotation.z,
+                        tf_msg.transform.rotation.w,
+                    ) = transform.get_rotation()
+
+                    # Send the transformation
+                    self.tf_broadcaster.sendTransform(tf_msg)
 
 
 def main():
