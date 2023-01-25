@@ -38,7 +38,7 @@ def main() -> int:
         "-s",
         type=str,
         default=DEFAULT_SEGMENT_ID,
-        help="Shared memory segment ID.",
+        help="Shared memory segment ID.  Default: '%(default)s'",
     )
     parser.add_argument(
         "--frequency", "-f", type=float, default=DEFAULT_FREQUENCY, help="Frequency."

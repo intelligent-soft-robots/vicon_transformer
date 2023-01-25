@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Connect to a running o80 Standalone instance and print the received data.
+"""Connect to a shared memory set up by an o80 back end and print the received data.
 
-The Standalone instance is expected to be run in a separate process (e.g. by
-o80_standalone.py) using the same segment ID.
+The back end is expected to be run in a separate process (e.g. by
+``o80_standalone.py``) using the same segment ID.  It needs to be started before
+``o80_print_data``.
 """
 import argparse
 import logging
@@ -51,7 +52,7 @@ def main() -> int:
         "-s",
         type=str,
         default=DEFAULT_SEGMENT_ID,
-        help="Shared memory segment ID.",
+        help="Shared memory segment ID. Default: '%(default)s'",
     )
     args = parser.parse_args()
 
