@@ -2,12 +2,13 @@
 # SPDX-License-Identifier: BSD-3-Clause
 """Get data from Vicon server and forward with ZMQ."""
 import argparse
+import contextlib
 import sys
 
 from vicon_transformer import ViconReceiverConfig, ViconReceiver, to_json
 
 
-def main():
+def main() -> int:
     # parse arguments
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -65,7 +66,5 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
+    with contextlib.suppress(KeyboardInterrupt):
         sys.exit(main())
-    except KeyboardInterrupt:
-        pass

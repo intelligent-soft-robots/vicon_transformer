@@ -1,11 +1,14 @@
 # SPDX-License-Identifier: BSD-3-Clause
+"""Represent 3d-transformations."""
 from __future__ import annotations
 
 import typing
 
 import numpy as np
-import numpy.typing as npt
 from scipy.spatial.transform import Rotation
+
+if typing.TYPE_CHECKING:
+    import numpy.typing as npt
 
 
 class Transformation:
@@ -70,6 +73,7 @@ class Transformation:
         return mat
 
     def __repr__(self) -> str:
+        """Convert to string representation."""
         return "Transformation(rotation={}, translation={})".format(
             self.rotation.as_quat(), self.translation
         )

@@ -28,27 +28,27 @@ def test_timestamp(test_data) -> None:
 
 
 def test_origin_init(test_data) -> None:
-    vT1 = ViconTransformer(JsonReceiver(test_data / "test_frame1.json"), ORIGIN_SUBJECT)
-    vT1.update()
-    vT2 = ViconTransformer(JsonReceiver(test_data / "test_frame2.json"), ORIGIN_SUBJECT)
-    vT2.update()
+    vt1 = ViconTransformer(JsonReceiver(test_data / "test_frame1.json"), ORIGIN_SUBJECT)
+    vt1.update()
+    vt2 = ViconTransformer(JsonReceiver(test_data / "test_frame2.json"), ORIGIN_SUBJECT)
+    vt2.update()
 
-    for name in vT1.get_subject_names():
+    for name in vt1.get_subject_names():
         # the marker of the Ballmaschine is not very good, better ignore it here
         if name == "Marker Ballmaschine":
             continue
 
-        T1 = vT1.get_transform(name)
-        T2 = vT2.get_transform(name)
-        delta_tr = T1.translation - T2.translation
-        rot1 = Rotation.from_quat(T1.get_rotation())
-        rot2 = Rotation.from_quat(T2.get_rotation())
-        delta_R = rot1.inv() * rot2
+        t1 = vt1.get_transform(name)
+        t2 = vt2.get_transform(name)
+        delta_tr = t1.translation - t2.translation
+        rot1 = Rotation.from_quat(t1.get_rotation())
+        rot2 = Rotation.from_quat(t2.get_rotation())
+        delta_rot = rot1.inv() * rot2
 
         # translation error
         assert np.linalg.norm(delta_tr) < 0.0025, name
         # rotation error
-        assert delta_R.magnitude() < 0.02, name
+        assert delta_rot.magnitude() < 0.02, name
 
 
 def test_basic_transforms_ping_at_origin(test_data) -> None:

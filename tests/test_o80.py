@@ -27,7 +27,7 @@ def test_data():
 
 
 @pytest.fixture()
-def burst_standalone(test_data):
+def _burst_standalone(test_data):
     # Set up a standalone with a JsonReceiver, that always provides the observation
     # loaded from the file
     receiver = JsonReceiver(test_data / "frame_ping_simple_translation.json")
@@ -43,7 +43,8 @@ def burst_standalone(test_data):
     stop_standalone(SEGMENT_ID)
 
 
-def test_o80_basic(burst_standalone) -> None:
+@pytest.mark.usefixtures("_burst_standalone")
+def test_o80_basic() -> None:
     # create a front end and receive one observation
     frontend = FrontEnd(SEGMENT_ID)
     obs = frontend.latest()

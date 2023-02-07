@@ -1,15 +1,20 @@
 # SPDX-License-Identifier: BSD-3-Clause
 """Simple node for testing tf."""
+import contextlib
+import typing
+
 import numpy as np
 
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import TransformStamped
 from tf2_ros import TransformException
 from tf2_ros.buffer import Buffer
 from tf2_ros.transform_listener import TransformListener
 
 from vicon_transformer.transform import Transformation, Rotation
+
+if typing.TYPE_CHECKING:
+    from geometry_msgs.msg import TransformStamped
 
 
 def msg_to_transform(msg: TransformStamped) -> Transformation:
@@ -61,7 +66,7 @@ class FrameListener(Node):
             )
             transform = msg_to_transform(transform_msg)
         except TransformException as ex:
-            self.get_logger().error(
+            self.get_logger().exception(
                 f"Could not transform {to_frame_rel} to {from_frame_rel}: {ex}"
             )
             return
@@ -77,10 +82,8 @@ class FrameListener(Node):
 def main():
     rclpy.init()
     node = FrameListener()
-    try:
+    with contextlib.suppress(KeyboardInterrupt):
         rclpy.spin(node)
-    except KeyboardInterrupt:
-        pass
 
     rclpy.shutdown()
 
