@@ -14,7 +14,7 @@ from vicon_transformer import (
 
 
 class FramePublisher(Node):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("vicon_tf_publisher")
 
         self.vicon_host = (
@@ -84,7 +84,6 @@ def main():
     rclpy.init()
     node = FramePublisher()
     try:
-        # rclpy.spin(node)
         node.run()
     except KeyboardInterrupt:
         pass

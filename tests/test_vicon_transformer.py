@@ -13,7 +13,7 @@ from vicon_transformer.vicon_transformer_bindings import JsonReceiver
 ORIGIN_SUBJECT = "rll_ping_base"
 
 
-@pytest.fixture
+@pytest.fixture()
 def test_data():
     return pathlib.PurePath(__file__).parent / "data"
 
