@@ -1,4 +1,4 @@
-# Dummy setup.py needed for colcon
+"""Dummy setup.py needed for colcon."""
 import setuptools
 
 if __name__ == "__main__":

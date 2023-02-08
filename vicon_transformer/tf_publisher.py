@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 """ROS Node that publishes TF transforms for Vicon objects."""
+import contextlib
+
 import rclpy
 from geometry_msgs.msg import TransformStamped
 from rclpy.node import Node
@@ -14,7 +16,9 @@ from vicon_transformer import (
 
 
 class FramePublisher(Node):
-    def __init__(self):
+    """Node that gets object poses from Vicon and broadcasts tf frames for them."""
+
+    def __init__(self) -> None:
         super().__init__("vicon_tf_publisher")
 
         self.vicon_host = (
@@ -34,7 +38,8 @@ class FramePublisher(Node):
         # Initialize the transform broadcaster
         self.tf_broadcaster = TransformBroadcaster(self)
 
-    def run(self):
+    def run(self) -> None:
+        """Run the node."""
         config = ViconReceiverConfig()
 
         with ViconReceiver(self.vicon_host, config) as receiver:
@@ -80,14 +85,12 @@ class FramePublisher(Node):
                     self.tf_broadcaster.sendTransform(tf_msg)
 
 
-def main():
+def main() -> None:
+    """Run the FramePublisher node."""
     rclpy.init()
     node = FramePublisher()
-    try:
-        # rclpy.spin(node)
+    with contextlib.suppress(KeyboardInterrupt):
         node.run()
-    except KeyboardInterrupt:
-        pass
 
     rclpy.shutdown()
 

@@ -12,13 +12,22 @@ import logging
 import pathlib
 import pickle
 import sys
-import types
 import typing
 
+if typing.TYPE_CHECKING:
+    import types
 
-def convert_record_1to2(
-    record: typing.Dict[str, typing.Any]
-) -> typing.Dict[str, typing.Any]:
+
+AnyDict = typing.Dict[str, typing.Any]
+
+
+FORMAT_V2 = 2
+FORMAT_V3 = 3
+FORMAT_V4 = 4
+
+
+def convert_record_1to2(record: AnyDict) -> AnyDict:
+    """Convert frame data from format 1 to format 2."""
     del record["num_subjects"]
     del record["subjectNames"]
 
@@ -45,13 +54,12 @@ def convert_record_1to2(
     return record
 
 
-def convert_record_2to3(
-    record: typing.Dict[str, typing.Any]
-) -> typing.Dict[str, typing.Any]:
+def convert_record_2to3(record: AnyDict) -> AnyDict:
+    """Convert frame data from format 2 to format 3."""
     del record["my_frame_number"]
     del record["on_time"]
 
-    def cvt_subject(sd):
+    def cvt_subject(sd: AnyDict) -> AnyDict:
         sd["is_visible"] = not sd["global_translation"][1]
         sd["global_translation"] = sd["global_translation"][0]
         sd["global_rotation_quaternion"] = sd["global_rotation"]["quaternion"][0]
@@ -68,10 +76,10 @@ def convert_record_2to3(
     return record
 
 
-def convert_record_3to4(
-    record: typing.Dict[str, typing.Any]
-) -> typing.Dict[str, typing.Any]:
-    def cvt_subject(sd):
+def convert_record_3to4(record: AnyDict) -> AnyDict:
+    """Convert frame data from format 3 to format 4."""
+
+    def cvt_subject(sd: AnyDict) -> AnyDict:
         val = sd["value"]
         val["global_pose"] = {
             "qx": val["global_rotation_quaternion"][0],
@@ -92,7 +100,22 @@ def convert_record_3to4(
     return record
 
 
-def main() -> int:
+def convert_record(record: AnyDict) -> AnyDict:
+    if "format_version" not in record:
+        record = convert_record_1to2(record)
+    if record["format_version"] == FORMAT_V2:
+        record = convert_record_2to3(record)
+    if record["format_version"] == FORMAT_V3:
+        record = convert_record_3to4(record)
+    if record["format_version"] == FORMAT_V4:
+        logging.info("Record is already in the latest format.")
+    else:
+        raise RuntimeError("Unexpected format version %s" % record["format_version"])
+
+    return record
+
+
+def main() -> int:  # noqa[C901]
     logging.basicConfig(level=logging.INFO)
 
     parser = argparse.ArgumentParser(description=__doc__)
@@ -126,18 +149,12 @@ def main() -> int:
     if single_record:
         data = [data]
 
-    for record in data:
-        if "format_version" not in record:
-            record = convert_record_1to2(record)
-        elif record["format_version"] == 2:
-            record = convert_record_2to3(record)
-        elif record["format_version"] == 3:
-            record = convert_record_3to4(record)
-        elif record["format_version"] == 4:
-            logging.info("File is already in the latest format.")
-        else:
-            logging.fatal("Unexpected format version %s", record["format_version"])
-            return 1
+    try:
+        for record in data:
+            convert_record(record)
+    except Exception as e:
+        logging.fatal(e)
+        return 1
 
     # unwrap
     if single_record:

@@ -84,10 +84,10 @@ def main() -> int:
         receiver = ViconReceiver(args.host_or_file, config)
         receiver.connect()
 
-    logging.info("Clearning shared memory on '{}'.".format(args.segment_id))
+    logging.info("Clearning shared memory on '%s'.", args.segment_id)
     o80.clear_shared_memory(args.segment_id)
 
-    logging.info("Starting o80 standalone with frequency {} Hz.".format(args.frequency))
+    logging.info("Starting o80 standalone with frequency %f Hz.", args.frequency)
 
     start_standalone(
         args.segment_id, args.frequency, args.burst, receiver, "rll_ping_base"
@@ -101,7 +101,7 @@ def main() -> int:
     except (KeyboardInterrupt, SystemExit):
         logging.info("exiting ...")
     except Exception as e:
-        logging.error(str(e))
+        logging.exception(str(e))
 
     logging.info("Stopping o80 standalone...")
     stop_standalone(args.segment_id)
