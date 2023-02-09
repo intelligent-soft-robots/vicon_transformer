@@ -35,6 +35,8 @@ find_package(vicon-datastream-sdk REQUIRED)
 ament_export_dependencies(fmt spdlog vicon-datastream-sdk)
 
 ament_python_install_package(${PROJECT_NAME} PACKAGE_DIR ${PROJECT_NAME})
+# TODO move to separate package
+ament_python_install_package(pam_vicon_o80 PACKAGE_DIR pam_vicon_o80)
 
 
 add_library(vicon_receiver
