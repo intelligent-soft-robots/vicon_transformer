@@ -55,6 +55,25 @@ struct SubjectData
     }
 };
 
+// Format 3 version of SubjectData.  Only here for backwards compatibility with
+// old recordings, do not use this in any new code!
+struct _SubjectData_v3
+{
+    bool is_visible;
+    std::array<double, 3> global_translation;
+    std::array<double, 4> global_rotation_quaternion;
+    double quality;
+
+    template <class Archive>
+    void serialize(Archive& archive)
+    {
+        archive(CEREAL_NVP(is_visible),
+                CEREAL_NVP(global_translation),
+                CEREAL_NVP(global_rotation_quaternion),
+                CEREAL_NVP(quality));
+    }
+};
+
 /**
  * @brief All data of a single Vicon frame.
  */
@@ -83,11 +102,56 @@ struct ViconFrame
     template <class Archive>
     void serialize(Archive& archive)
     {
-        int format_version = 4;
+        constexpr int LATEST_FORMAT = 4;
+
+        int format_version = LATEST_FORMAT;
         archive(CEREAL_NVP(format_version));
-        if (format_version != 4)
+
+        if (format_version == 3)
         {
-            throw std::runtime_error("Invalid input format");
+            // This can only happen if we are loading, otherwise, format_version
+            // should have the value of LATEST_FORMAT, which is != 3.
+
+            // In format 3, the ViconFrame itself was the same but SubjectData
+            // was different
+            std::map<std::string, _SubjectData_v3> subjects_v3;
+            archive(CEREAL_NVP(frame_number),
+                    CEREAL_NVP(frame_rate),
+                    CEREAL_NVP(latency),
+                    CEREAL_NVP(time_stamp),
+                    CEREAL_NVP(subjects_v3));
+
+            subjects.clear();
+            for (auto const& [key, val] : subjects_v3)
+            {
+                SubjectData sd;
+                sd.is_visible = val.is_visible;
+                sd.quality = val.quality;
+
+                sd.global_pose.translation.x() =
+                    val.global_translation[0] / 1000;
+                sd.global_pose.translation.y() =
+                    val.global_translation[1] / 1000;
+                sd.global_pose.translation.z() =
+                    val.global_translation[2] / 1000;
+                sd.global_pose.rotation.x() = val.global_rotation_quaternion[0];
+                sd.global_pose.rotation.y() = val.global_rotation_quaternion[1];
+                sd.global_pose.rotation.z() = val.global_rotation_quaternion[2];
+                sd.global_pose.rotation.w() = val.global_rotation_quaternion[3];
+
+                subjects[key] = sd;
+            }
+
+            return;
+        }
+
+        if (format_version != LATEST_FORMAT)
+        {
+            throw std::runtime_error(
+                fmt::format("Invalid input format.  Expected format version {} "
+                            "but archive has {}",
+                            LATEST_FORMAT,
+                            format_version));
         }
 
         archive(CEREAL_NVP(frame_number),
