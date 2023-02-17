@@ -13,8 +13,8 @@ import sys
 import typing as t
 
 import numpy as np
-from scipy.spatial.transform import Rotation
 
+import pam_vicon_o80.pam_vicon
 from vicon_transformer import (
     PlaybackReceiver,
     ViconReceiverConfig,
@@ -25,7 +25,7 @@ from vicon_transformer.vicon_transformer_bindings import Transformation, Receive
 
 
 ROBOT_BASE_SUBJECT = "rll_muscle_base"
-BALL_MACHINE_SUBJECT = "Marker Ballmaschine"
+BALL_MACHINE_SUBJECT = "Ballmaschine Frontmarker"
 TABLE_CORNER_SUBJECTS = (
     "TT Platte_Eckteil 1",
     "TT Platte_Eckteil 2",
@@ -51,64 +51,20 @@ class JsonEncoder(json.JSONEncoder):
 
 def get_table_transform(transformer: ViconTransformer) -> Transformation:
     """Get pose of the table based on poses of the corner markers."""
-    # table dimensions (assuming a standard table tennis table)
-    # https://www.tabletennisspot.com/knowing-the-dimensions-of-table-tennis-table
-    TABLE_LENGTH = 0.274
-    TABLE_WIDTH = 1.525
-
-    # IDs of the corners:
-    #
-    #  1┌─────────┐2
-    #   │  y      │
-    #   │  ▲      │
-    #   │  │      │
-    #   │  │    x │
-    #   │  └───>  │
-    #   │         │
-    #  4└─────────┘3
-
-    DX = TABLE_WIDTH / 2
-    DY = TABLE_LENGTH / 2
-    corner_vectors_table_frame = np.array(
-        [
-            [-DX, DY, 0],
-            [DX, DY, 0],
-            [DX, -DY, 0],
-            [-DX, -DY, 0],
-        ]
-    )
-
     corner_poses_world = [
         transformer.get_transform(name) for name in TABLE_CORNER_SUBJECTS
     ]
     corner_positions_world = [c.translation for c in corner_poses_world]
 
-    # For the table's position in world frame, simply use the centroid between the
-    # corners.
-    table_position_world = np.mean(corner_positions_world, axis=0)
+    pose = pam_vicon_o80.pam_vicon.get_table_pose(corner_positions_world)
 
-    # Remove the translational part from the corner positions in world frame.  To my
-    # understanding, this is not really necessary as it is anyway done as a first step
-    # in the Kabsch algorithm, which is implemented in Rotation.align_vectors().
-    # However, the documentation does not explicitly mention this and asks for vectors
-    # rather then points, so better already do it here to be on the safe side (i.e. in
-    # case they change the implementation in a future release).
-    corner_vectors_world_frame = corner_positions_world - table_position_world
+    # convert to Transformation from C++ bindings to be compatible with rest of the
+    # script.
+    tf = Transformation()
+    tf.translation = pose.translation
+    tf.set_rotation(pose.rotation.as_quat())
 
-    # get rotation of the table in world frame
-    table_rot, rssd = Rotation.align_vectors(
-        corner_vectors_world_frame, corner_vectors_table_frame
-    )
-
-    logging.info("Table position: %s", table_position_world)
-    logging.info("Table rotation (XYZ): %s", table_rot.as_euler("XYZ"))
-    logging.info("Table rotation rssd: %s", rssd)
-
-    table_tf = Transformation()
-    table_tf.translation = table_position_world
-    table_tf.set_rotation(table_rot.as_quat())
-
-    return table_tf
+    return tf
 
 
 def main() -> int:
