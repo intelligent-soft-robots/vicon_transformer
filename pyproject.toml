@@ -51,6 +51,7 @@ module = [
     "rclpy.*",
     "scipy.*",
     "signal_handler",
+    "tennicam_client",
     "tf2_ros.*",
     "vicon_dssdk",
     "vicon_transformer.vicon_transformer_bindings",

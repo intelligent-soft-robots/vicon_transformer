@@ -118,6 +118,7 @@ install(
 )
 
 install_scripts(
+    scripts/record_tennicam_vicon_trajectory.py
     scripts/vicon_print_data.py
 
     DESTINATION lib/${PROJECT_NAME}
