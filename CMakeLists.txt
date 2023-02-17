@@ -129,11 +129,17 @@ if(BUILD_TESTING)
     find_package(ament_cmake_gmock REQUIRED)
 
     # Python tests
+    # Note: The default working directory for tests run by colon is the package root.
+    # Python tests that use the C++ bindings need to be run in a different directory,
+    # otherwise the local Python source will shadow the installed package and thus the
+    # pybind11 modules will be missing.
     ament_add_pytest_test(test_transform_py tests/test_transform.py
         WORKING_DIRECTORY /tmp)
     ament_add_pytest_test(test_vicon_transformer_py tests/test_vicon_transformer.py
         WORKING_DIRECTORY /tmp)
     ament_add_pytest_test(test_o80_py tests/test_o80.py
+        WORKING_DIRECTORY /tmp)
+    ament_add_pytest_test(test_pam_vicon_py tests/test_pam_vicon.py
         WORKING_DIRECTORY /tmp)
 
     # C++ tests
