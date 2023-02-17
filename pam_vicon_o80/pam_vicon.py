@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: BSD-3-Clause
 """Wrapper around PAM Vicon o80 front end."""
 import logging
 import typing as t
@@ -44,7 +45,7 @@ def get_table_pose(
     """
     # table dimensions (assuming a standard table tennis table)
     # https://www.tabletennisspot.com/knowing-the-dimensions-of-table-tennis-table
-    TABLE_LENGTH = 0.274
+    TABLE_LENGTH = 2.740
     TABLE_WIDTH = 1.525
 
     DX = TABLE_WIDTH / 2
