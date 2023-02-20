@@ -83,6 +83,19 @@ target_link_libraries(vicon_record
     cli_utils::program_options
 )
 
+add_executable(compute_tennicam_to_vicon_transform
+    src/compute_tennicam_to_vicon_transform.cpp)
+target_include_directories(compute_tennicam_to_vicon_transform PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+target_link_libraries(compute_tennicam_to_vicon_transform
+    Eigen3::Eigen
+    spdlog::spdlog
+    fmt::fmt
+    cli_utils::program_options
+)
+
 ## Python Bindings
 add_pybind11_module(${PROJECT_NAME}_bindings srcpy/bindings.cpp
     LINK_LIBRARIES 
@@ -110,6 +123,7 @@ install(
 
         vicon_print_data_cpp
         vicon_record
+        compute_tennicam_to_vicon_transform
     EXPORT export_${PROJECT_NAME}
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
