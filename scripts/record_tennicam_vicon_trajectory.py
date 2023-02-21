@@ -14,6 +14,14 @@ Things to consider when recording:
   tennicam and Vicon measure the same position.
 - Move slowly.  Tennicam and Vicon are not exactly synchronised, so better move
   the ball/stick slowly, to reduce errors introduced by this.
+
+Stop the recording by pressing Ctrl+C.  The trajectory is then saved to the specified
+destination path using JSON format.  It is structured as sequence of objects with the
+values
+- "tennicam_position": Position [x, y, z] of the ball as detected by tennicam.
+- "tennicam_timestamp": Timestamp of the tennicam position.
+- "vicon_position:": Position [x, y, z] of the LED stick as detected by tennicam.
+- "vicon_timestamp": Timestamp of the Vicon position.
 """
 import argparse
 import contextlib
