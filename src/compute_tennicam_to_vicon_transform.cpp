@@ -22,6 +22,20 @@ using json = nlohmann::json;
 
 namespace
 {
+// format matrices as nested lists [[1,2,3], [4,5,6], ...]
+Eigen::IOFormat matrix_list_fmt(Eigen::StreamPrecision,
+                                Eigen::DontAlignCols,
+                                ", ",
+                                ",\n",
+                                "[",
+                                "]",
+                                "[",
+                                "]");
+
+// format vectors as toml-compatible list [1, 2, 3]
+Eigen::IOFormat vector_list_fmt(
+    Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", ", ", "", "", "[", "]");
+
 // Class to get console arguments
 class Args : public cli_utils::ProgramOptions
 {
@@ -71,6 +85,19 @@ tennicam_client's configuration file.
         verbose = args.count("verbose") > 0;
     }
 };
+
+double compute_mean_error(Eigen::MatrixXd tennicam_points,
+                          Eigen::MatrixXd vicon_points,
+                          Eigen::Isometry3d transform)
+{
+    Eigen::MatrixXd tc_transformed =
+        transform * tennicam_points.colwise().homogeneous();
+    Eigen::MatrixXd diff = tc_transformed - vicon_points;
+    Eigen::VectorXd norms = diff.colwise().norm();
+
+    return norms.mean();
+}
+
 }  // namespace
 
 int main(int argc, char *argv[])
@@ -136,29 +163,28 @@ int main(int argc, char *argv[])
         }
     }
 
+    logger->debug("tennicam points:\n{}\n",
+                  tennicam_points.transpose().format(matrix_list_fmt));
+    logger->debug("vicon points:\n{}\n",
+                  vicon_points.transpose().format(matrix_list_fmt));
+
     // compute transformation using Umeyama algorithm
     Eigen::Isometry3d tf;
     tf.matrix() = Eigen::umeyama(tennicam_points, vicon_points, false);
-    logger->debug("Transformation matrix:\n{}", tf.matrix());
+    logger->debug("Transformation matrix:\n{}\n",
+                  tf.matrix().format(matrix_list_fmt));
+
+    double mean_error = compute_mean_error(tennicam_points, vicon_points, tf);
+    logger->info("Mean error: {}", mean_error);
 
     // tennicam expects Euler angles in "extrinsic xyz" convention
     Eigen::Vector3d euler_xyz = tf.rotation().eulerAngles(0, 1, 2);
 
-    // format vectors as toml-compatible list [1, 2, 3]
-    Eigen::IOFormat flat_toml_list_fmt(Eigen::StreamPrecision,
-                                       Eigen::DontAlignCols,
-                                       ", ",
-                                       ", ",
-                                       "",
-                                       "",
-                                       "[",
-                                       "]");
     // print transform in the format used by tennicam_client's config.toml
     fmt::print("[transform]\n");
-    fmt::print("translation = {}\n",
-               tf.translation().format(flat_toml_list_fmt));
+    fmt::print("translation = {}\n", tf.translation().format(vector_list_fmt));
     fmt::print("# extrinsic xyz Euler angles\n");
-    fmt::print("rotation = {}\n", euler_xyz.format(flat_toml_list_fmt));
+    fmt::print("rotation = {}\n", euler_xyz.format(vector_list_fmt));
 
     return 0;
 }
