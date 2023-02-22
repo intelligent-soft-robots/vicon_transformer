@@ -35,7 +35,8 @@ PYBIND11_MODULE(pam_vicon_o80, m)
                        &pam_vicon_o80::FixedSizeViconFrame::subjects)
         .def(
             "__str__",
-            [](const pam_vicon_o80::FixedSizeViconFrame& vf) {
+            [](const pam_vicon_o80::FixedSizeViconFrame& vf)
+            {
                 std::stringstream stream;
                 stream << vf;
                 return stream.str();

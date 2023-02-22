@@ -55,7 +55,8 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
         // workaround provide a getter and setter that provide/expect the
         // quaternion as a list [x, y, z, w].
         .def("get_rotation",
-             [](const vt::Transformation& self) {
+             [](const vt::Transformation& self)
+             {
                  std::array<double, 4> quat = {self.rotation.x(),
                                                self.rotation.y(),
                                                self.rotation.z(),
@@ -63,7 +64,8 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
                  return quat;
              })
         .def("set_rotation",
-             [](vt::Transformation& self, const std::array<double, 4>& quat) {
+             [](vt::Transformation& self, const std::array<double, 4>& quat)
+             {
                  self.rotation.x() = quat[0];
                  self.rotation.y() = quat[1];
                  self.rotation.z() = quat[2];
@@ -87,7 +89,8 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
         .def_readwrite("subjects", &vt::ViconFrame::subjects)
         .def(
             "__str__",
-            [](const vt::ViconFrame& vf) {
+            [](const vt::ViconFrame& vf)
+            {
                 std::stringstream stream;
                 stream << vf;
                 return stream.str();
