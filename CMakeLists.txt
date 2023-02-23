@@ -171,6 +171,15 @@ if(BUILD_TESTING)
         serialization_utils::serialization_utils
     )
 
+    ament_add_gmock(test_pointcloud
+        tests/test_pointcloud.cpp
+        src/pointcloud.cpp
+    )
+    target_include_directories(test_pointcloud PRIVATE include)
+    target_link_libraries(test_pointcloud
+        Eigen3::Eigen
+    )
+
     ament_add_gmock(test_vicon_receiver_cpp
         tests/test_vicon_receiver.cpp
     )
