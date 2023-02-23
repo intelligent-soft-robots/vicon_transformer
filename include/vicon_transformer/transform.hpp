@@ -69,4 +69,28 @@ public:
                 cereal::make_nvp("z", translation.z()));
     }
 };
+
+//! Represents a 3d transformation as translation vector and Euler angles.
+struct EulerTransform
+{
+    //! Translational part of the transform.
+    Eigen::Vector3d translation;
+    //! Rotational part of the transform in extrinsic xyz Euler angles [radian].
+    Eigen::Vector3d euler_xyz;
+
+    //! Construct identity transformation.
+    EulerTransform()
+    {
+        translation.setZero();
+        euler_xyz.setZero();
+    }
+
+    //! Construct from a isometry transformation.
+    EulerTransform(const Eigen::Isometry3d &tf)
+    {
+        translation = tf.translation();
+        euler_xyz = tf.rotation().eulerAngles(0, 1, 2);
+    }
+};
+
 }  // namespace vicon_transformer

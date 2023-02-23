@@ -16,7 +16,9 @@
 
 #include <cli_utils/program_options.hpp>
 
+#include <vicon_transformer/pointcloud.hpp>
 #include <vicon_transformer/thirdparty/json.hpp>
+#include <vicon_transformer/transform.hpp>
 
 using json = nlohmann::json;
 
@@ -86,18 +88,6 @@ tennicam_client's configuration file.
     }
 };
 
-double compute_mean_error(Eigen::MatrixXd tennicam_points,
-                          Eigen::MatrixXd vicon_points,
-                          Eigen::Isometry3d transform)
-{
-    Eigen::MatrixXd tc_transformed =
-        transform * tennicam_points.colwise().homogeneous();
-    Eigen::MatrixXd diff = tc_transformed - vicon_points;
-    Eigen::VectorXd norms = diff.colwise().norm();
-
-    return norms.mean();
-}
-
 }  // namespace
 
 int main(int argc, char *argv[])
@@ -137,32 +127,21 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if (!trajectory.is_array())
+    // load positions from trajectory into Eigen matrices, one column per point
+    Eigen::Matrix3Xd tennicam_points, vicon_points;
+    try
     {
-        logger->critical("Invalid data structure.  Expected sequence.");
+        std::tie(tennicam_points, vicon_points) =
+            vicon_transformer::json_point_cloud_to_eigen(
+                trajectory, "tennicam_position", "vicon_position");
+    }
+    catch (const std::invalid_argument &e)
+    {
+        logger->critical(e.what());
         return 2;
     }
 
-    size_t n_points = trajectory.size();
-    logger->info("Loaded trajectory with {} steps.", n_points);
-
-    // load positions from trajectory into Eigen matrices, one column per point
-    Eigen::MatrixXd tennicam_points, vicon_points;
-    tennicam_points.resize(3, n_points);
-    vicon_points.resize(3, n_points);
-    for (size_t i = 0; i < n_points; i++)
-    {
-        std::array<double, 3> tennicam_position, vicon_position;
-        trajectory[i].at("tennicam_position").get_to(tennicam_position);
-        trajectory[i].at("vicon_position").get_to(vicon_position);
-
-        for (size_t j = 0; j < 3; j++)
-        {
-            tennicam_points(j, i) = tennicam_position[j];
-            vicon_points(j, i) = vicon_position[j];
-        }
-    }
-
+    logger->info("Loaded trajectory with {} steps.", tennicam_points.cols());
     logger->debug("tennicam points:\n{}\n",
                   tennicam_points.transpose().format(matrix_list_fmt));
     logger->debug("vicon points:\n{}\n",
@@ -174,17 +153,20 @@ int main(int argc, char *argv[])
     logger->debug("Transformation matrix:\n{}\n",
                   tf.matrix().format(matrix_list_fmt));
 
-    double mean_error = compute_mean_error(tennicam_points, vicon_points, tf);
+    double mean_error = vicon_transformer::compute_mean_transform_error(
+        tennicam_points, vicon_points, tf);
     logger->info("Mean error: {}", mean_error);
 
     // tennicam expects Euler angles in "extrinsic xyz" convention
-    Eigen::Vector3d euler_xyz = tf.rotation().eulerAngles(0, 1, 2);
+    vicon_transformer::EulerTransform tennicam_tf(tf);
 
     // print transform in the format used by tennicam_client's config.toml
     fmt::print("[transform]\n");
-    fmt::print("translation = {}\n", tf.translation().format(vector_list_fmt));
+    fmt::print("translation = {}\n",
+               tennicam_tf.translation.format(vector_list_fmt));
     fmt::print("# extrinsic xyz Euler angles\n");
-    fmt::print("rotation = {}\n", euler_xyz.format(vector_list_fmt));
+    fmt::print("rotation = {}\n",
+               tennicam_tf.euler_xyz.format(vector_list_fmt));
 
     return 0;
 }
