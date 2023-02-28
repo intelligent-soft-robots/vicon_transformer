@@ -21,6 +21,7 @@ class NoFrameDataError(RuntimeError):
 
 def get_table_pose(
     corner_positions_world: t.Sequence[np.ndarray],
+    *,
     yaw_only: bool = False,
     table_length: float = 2.740,
     table_width: float = 1.525,
@@ -147,7 +148,7 @@ class PamVicon:
         ]
         corner_positions_world = [c.translation for c in corner_poses_world]
 
-        return get_table_pose(corner_positions_world, yaw_only)
+        return get_table_pose(corner_positions_world, yaw_only=yaw_only)
 
     def get_robot_pose(self) -> Transformation:
         """Get pose of the robot base."""
