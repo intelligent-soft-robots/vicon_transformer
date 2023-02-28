@@ -12,6 +12,7 @@
 #include <map>
 #include <string>
 
+#include "errors.hpp"
 #include "o80_driver.hpp"
 #include "o80_standalone.hpp"
 
@@ -62,9 +63,17 @@ const std::map<std::string, size_t> _subject_name_to_index = {
  *
  * @return Index at which this subject is expected in subject arrays.
  */
-size_t map_subject_name_to_index(const std::string &name)
+inline size_t map_subject_name_to_index(const std::string &name)
 {
-    return _subject_name_to_index.at(name);
+    try
+    {
+        return _subject_name_to_index.at(name);
+    }
+    catch (const std::out_of_range &)
+    {
+        // throw a more explicit exception
+        throw vicon_transformer::UnknownSubjectError(name);
+    }
 }
 
 /**
@@ -81,7 +90,7 @@ size_t map_subject_name_to_index(const std::string &name)
  *
  * @return Array that maps subject index to its name.
  */
-std::array<std::string, NUM_SUBJECTS> get_subject_names()
+inline std::array<std::string, NUM_SUBJECTS> get_subject_names()
 {
     std::array<std::string, NUM_SUBJECTS> names;
 

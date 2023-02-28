@@ -7,9 +7,11 @@
  */
 #pragma once
 
+#include <map>
 #include <memory>
 #include <string>
 
+#include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
 #include <o80/driver.hpp>
@@ -35,6 +37,13 @@ class None
  * likewise need to have access to this mapping to know which subject is listed
  * at which position.
  *
+ * ``map_name_to_index`` is expected to throw an @ref UnknownSubjectError if an
+ * unexpected name is passed to it.  In this case, the driver will ignore that
+ * subject.
+ *
+ * Subjects for which no information is provided by Vicon will have the
+ * ``is_visible`` field set to false.
+ *
  * The driver uses @ref ViconTransformer with the given receiver to acquire the
  * Vicon frames and provide poses relative to the specified origin subject.
  *
@@ -58,6 +67,19 @@ public:
               std::shared_ptr<spdlog::logger> logger = nullptr)
         : vicon_transformer_(receiver, origin_subject_name, logger)
     {
+        if (logger)
+        {
+            log_ = logger;
+        }
+        else
+        {
+            const std::string name = "Vicon o80 Driver";
+            if (!(log_ = spdlog::get(name)))
+            {
+                log_ = spdlog::stderr_color_mt(name);
+                log_->set_level(spdlog::level::debug);
+            }
+        }
     }
 
     void start() override
@@ -93,7 +115,29 @@ public:
 
         for (auto& [name, data] : frame.subjects)
         {
-            size_t i = map_name_to_index(name);
+            size_t i;
+            try
+            {
+                i = map_name_to_index(name);
+            }
+            catch (const UnknownSubjectError&)
+            {
+                // Ignore unexpected subjects but print a warning the first time
+                // they occur.
+
+                static std::map<std::string, bool> already_warned;
+
+                // bools are value-initialized to false, so if 'name' is not yet
+                // in the map, a new entry will created with the value false.
+                if (!already_warned[name])
+                {
+                    log_->warn("Ignore unexpected subject '{}'", name);
+                    already_warned[name] = true;
+                }
+
+                continue;
+            }
+
             if (i >= NUM_SUBJECTS)
             {
                 throw std::out_of_range(
@@ -112,6 +156,7 @@ public:
 
 private:
     ViconTransformer vicon_transformer_;
+    std::shared_ptr<spdlog::logger> log_;
 };
 
 }  // namespace vicon_transformer
