@@ -86,6 +86,7 @@ target_link_libraries(vicon_record
 add_executable(compute_tennicam_to_vicon_transform
     src/compute_tennicam_to_vicon_transform.cpp
     src/pointcloud.cpp
+    src/transform.cpp
 )
 target_include_directories(compute_tennicam_to_vicon_transform PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
