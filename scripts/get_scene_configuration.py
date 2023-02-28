@@ -6,13 +6,12 @@ format.
 """
 import argparse
 import contextlib
+import functools
 import json
 import logging
 import pathlib
 import sys
 import typing as t
-
-import numpy as np
 
 import pam_vicon_o80.pam_vicon
 from vicon_transformer import (
@@ -22,6 +21,9 @@ from vicon_transformer import (
     ViconTransformer,
 )
 from vicon_transformer.vicon_transformer_bindings import Transformation, Receiver
+
+if t.TYPE_CHECKING:
+    import numpy as np
 
 
 ROBOT_BASE_SUBJECT = "rll_muscle_base"
@@ -37,16 +39,20 @@ TABLE_CORNER_SUBJECTS = (
 class JsonEncoder(json.JSONEncoder):
     """JSON encoder that handles custom types used here"""
 
-    def default(self, obj: t.Any) -> t.Any:
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        if isinstance(obj, Transformation):
-            tf_dict = {
-                "position": obj.translation,
-                "orientation": obj.get_rotation(),
-            }
-            return tf_dict
-        return json.JSONEncoder.default(self, obj)
+    @functools.singledispatchmethod
+    def default(self, obj):  # noqa[ANN]
+        return super().default(obj)
+
+    @default.register
+    def _(self, obj: np.ndarray) -> t.Any:
+        return obj.tolist()
+
+    @default.register
+    def _(self, obj: Transformation) -> t.Any:
+        return {
+            "position": obj.translation,
+            "orientation": obj.get_rotation(),
+        }
 
 
 def get_table_transform(transformer: ViconTransformer) -> Transformation:
