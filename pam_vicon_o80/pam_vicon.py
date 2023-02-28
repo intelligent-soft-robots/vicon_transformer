@@ -20,7 +20,10 @@ class NoFrameDataError(RuntimeError):
 
 
 def get_table_pose(
-    corner_positions_world: t.Sequence[np.ndarray], yaw_only: bool = False
+    corner_positions_world: t.Sequence[np.ndarray],
+    yaw_only: bool = False,
+    table_length: float = 2.740,
+    table_width: float = 1.525,
 ) -> Transformation:
     """Get pose of the table based on positions of the corner markers.
 
@@ -28,35 +31,43 @@ def get_table_pose(
 
     ::
 
-        1┌─────────┐2
-         │  y      │
-         │  ▲      │
-         │  │      │
-         │  │    x │
-         │  └───>  │
-         │         │
-        4└─────────┘3
+        1┌───────────┐2
+         │           │
+         │   y       │     l
+         │   ▲       │     e
+         │   │       │     n
+         │   │    x  │     g
+         │   └───>   │     t
+         │           │     h
+         │           │
+        4└───────────┘3
+
+             width
+
+
+    The default values for table length and width are based on the ITTF rules [1].
+
+
+    [1] https://documents.ittf.sport/document/284
+
 
     Args:
         corner_positions_world:  Positions of the table corners in world frame.  See
             above for the expected order.
         yaw_only:  If true, only the yaw angle of the tables orientation is used
             (i.e. assume that the table is flat on the ground).
+        table_length:  Length of the table in metres.
+        table_width:  Width of the table in metres.
     """
-    # table dimensions (assuming a standard table tennis table)
-    # https://www.tabletennisspot.com/knowing-the-dimensions-of-table-tennis-table
-    TABLE_LENGTH = 2.740
-    TABLE_WIDTH = 1.525
-
-    DX = TABLE_WIDTH / 2
-    DY = TABLE_LENGTH / 2
+    dx = table_width / 2
+    dy = table_length / 2
     # see docstring for expected order of corners
     corner_vectors_table_frame = np.array(
         [
-            [-DX, DY, 0],
-            [DX, DY, 0],
-            [DX, -DY, 0],
-            [-DX, -DY, 0],
+            [-dx, dy, 0],
+            [dx, dy, 0],
+            [dx, -dy, 0],
+            [-dx, -dy, 0],
         ]
     )
 
