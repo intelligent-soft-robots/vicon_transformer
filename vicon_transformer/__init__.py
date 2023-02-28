@@ -13,6 +13,7 @@ from __future__ import annotations
 from .vicon_transformer_bindings import (
     BadResultError,
     NotConnectedError,
+    PlaybackReceiver,
     SubjectData,
     SubjectNotVisibleError,
     UnknownSubjectError,
@@ -44,6 +45,7 @@ class ViconReceiver(_ViconReceiver):
 __all__ = (
     "BadResultError",
     "NotConnectedError",
+    "PlaybackReceiver",
     "SubjectData",
     "SubjectNotVisibleError",
     "UnknownSubjectError",
