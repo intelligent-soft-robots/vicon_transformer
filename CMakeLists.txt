@@ -71,8 +71,8 @@ target_link_libraries(vicon_transformer
 )
 
 
-add_executable(vicon_print_data_cpp src/vicon_print_data.cpp)
-target_link_libraries(vicon_print_data_cpp
+add_executable(vicon_print_data src/vicon_print_data.cpp)
+target_link_libraries(vicon_print_data
     vicon_receiver
     cli_utils::program_options
 )
@@ -124,7 +124,7 @@ install(
         vicon_receiver
         vicon_transformer
 
-        vicon_print_data_cpp
+        vicon_print_data
         vicon_record
         compute_tennicam_to_vicon_transform
     EXPORT export_${PROJECT_NAME}
@@ -138,7 +138,7 @@ install_scripts(
     scripts/record_tennicam_vicon_trajectory.py
     scripts/vicon_o80_print_data.py
     scripts/vicon_o80_standalone.py
-    scripts/vicon_print_data.py
+    scripts/vicon_print_data_py.py
 
     DESTINATION bin
 )
