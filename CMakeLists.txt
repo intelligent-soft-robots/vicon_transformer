@@ -130,15 +130,17 @@ install(
     EXPORT export_${PROJECT_NAME}
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
-    RUNTIME DESTINATION lib/${PROJECT_NAME}
+    RUNTIME DESTINATION bin
     INCLUDES DESTINATION include
 )
 
 install_scripts(
     scripts/record_tennicam_vicon_trajectory.py
+    scripts/vicon_o80_print_data.py
+    scripts/vicon_o80_standalone.py
     scripts/vicon_print_data.py
 
-    DESTINATION lib/${PROJECT_NAME}
+    DESTINATION bin
 )
 
 
