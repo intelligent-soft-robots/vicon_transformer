@@ -117,7 +117,7 @@ def main() -> int:
             # for the next tennicam observation and then immediately get the latest
             # Vicon observation.  This way, they should be fairly synchronised.
             logging.debug("tennicam: Wait for next observation.")
-            i = tennicam_frontend.latest().iteration
+            i = tennicam_frontend.latest().get_iteration()
             obs_tennicam = tennicam_frontend.read(i + 1)
             logging.debug("vicon: Get latest observation.")
             obs_vicon = vicon_frontend.latest()
