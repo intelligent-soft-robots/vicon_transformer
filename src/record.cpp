@@ -28,7 +28,7 @@ public:
     {
         return R"(Record Vicon data and save to file.
 
-Usage:  record <vicon-host-name> <output-file> [options]
+Usage:  vicon_record <vicon-host-name> <output-file> [options]
 
 )";
     }
@@ -48,7 +48,7 @@ Usage:  record <vicon-host-name> <output-file> [options]
              "Path/name of the file to which the recorded data is written.")
             ("duration,d",
              po::value<double>(&duration_s),
-             "How long to record (in seconds).  Default: 60 s)")
+             "How long to record (in seconds).  Default: 60 s")
             ;
         // clang-format on
 
