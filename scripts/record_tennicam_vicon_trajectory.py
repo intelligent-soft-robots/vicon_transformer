@@ -118,7 +118,18 @@ def main() -> int:
             # Vicon observation.  This way, they should be fairly synchronised.
             logging.debug("tennicam: Wait for next observation.")
             i = tennicam_frontend.latest().get_iteration()
-            obs_tennicam = tennicam_frontend.read(i + 1)
+            try:
+                obs_tennicam = tennicam_frontend.read(i + 1)
+            except Exception as e:
+                # Only print error message if the exception was not caused by a SIGINT
+                # signal.  In either case, break the loop so that recorded data can be
+                # saved to file before terminating.
+                if not signal_handler.has_received_sigint():
+                    logging.exception(
+                        "Unexpected error occurred: %s\nAbort recording.", e
+                    )
+                break
+
             logging.debug("vicon: Get latest observation.")
             obs_vicon = vicon_frontend.latest()
 
@@ -146,7 +157,7 @@ def main() -> int:
             )
             progress.update()
 
-    logging.debug("Save trajectory to file %s", args.destination)
+    logging.info("Save trajectory to file %s", args.destination)
     with open(args.destination, "w") as f:
         json.dump(data, f, cls=JsonEncoder)
 
