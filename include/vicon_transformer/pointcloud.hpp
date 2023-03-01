@@ -9,7 +9,7 @@
 
 #include <Eigen/Eigen>
 
-#include <vicon_transformer/thirdparty/json.hpp>
+#include "thirdparty/json.hpp"
 
 namespace vicon_transformer
 {

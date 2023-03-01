@@ -10,7 +10,7 @@
 #include <fmt/format.h>
 #include <vicon-datastream-sdk/DataStreamClient.h>
 
-#include <vicon_transformer/fmt.hpp>
+#include "fmt.hpp"
 
 namespace vicon_transformer
 {
