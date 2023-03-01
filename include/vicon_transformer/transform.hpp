@@ -78,8 +78,9 @@ public:
  * However, the name "Euler" is often used for them as well and probably better
  * known, so we'll stick with this name here.
  */
-struct EulerTransform
+class EulerTransform
 {
+public:
     //! Translational part of the transform.
     Eigen::Vector3d translation;
     //! Rotational part of the transform in extrinsic xyz Euler angles [radian].
