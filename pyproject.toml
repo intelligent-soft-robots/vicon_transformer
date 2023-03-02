@@ -1,8 +1,3 @@
-[build-system]
-requires = ["setuptools>=44.0.0"]
-build-backend = "setuptools.build_meta"
-
-
 [tool.ruff]
 # enable all and disable a few via ignore below
 select = ["ALL"]
