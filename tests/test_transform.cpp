@@ -14,6 +14,7 @@
 
 #include "utils.hpp"
 
+using vicon_transformer::EulerTransform;
 using vicon_transformer::Transformation;
 
 TEST(TestTransformation, identity)
@@ -116,6 +117,32 @@ TEST(TestTransformation, serialize)
     auto tf2 = serialization_utils::from_json<Transformation>(json);
     ASSERT_QUATERNION_ALMOST_EQUAL(tf.rotation, tf2.rotation);
     ASSERT_MATRIX_ALMOST_EQUAL(tf.translation, tf2.translation);
+}
+
+TEST(TestEulerTransform, default_construct)
+{
+    EulerTransform et;
+    // verify everything is set to zero
+    ASSERT_TRUE(et.translation.isZero());
+    ASSERT_TRUE(et.euler_xyz.isZero());
+}
+
+TEST(TestEulerTransform, construct_from_isometry)
+{
+    // Important: tf needs to be properly initialised (e.g. to identity),
+    // otherwise the bottom row of the 4x4 is not initialised by just setting
+    // translation and rotation parts below...
+    Eigen::Isometry3d tf = Eigen::Isometry3d::Identity();
+
+    Eigen::Vector3d translation(1.3, -0.5, 5.2);
+    tf.translation() = translation;
+    // matrix constructed from extrinsic xyz Euler angles [0.7, 0.2, -1.3]
+    tf.linear() << 0.26216666, 0.77120613, -0.5800946, -0.94435117, 0.08127215,
+        -0.3187408, -0.19866933, 0.63137622, 0.74959627;
+
+    EulerTransform et(tf);
+    ASSERT_MATRIX_ALMOST_EQUAL(et.translation, translation);
+    ASSERT_MATRIX_ALMOST_EQUAL(et.euler_xyz, Eigen::Vector3d(0.7, 0.2, -1.3));
 }
 
 int main(int argc, char **argv)

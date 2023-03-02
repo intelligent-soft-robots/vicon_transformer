@@ -69,4 +69,28 @@ public:
                 cereal::make_nvp("z", translation.z()));
     }
 };
+
+/**
+ * @brief Represents a 3d transformation as translation vector and Euler angles.
+ *
+ * The convention used for the Euler angles is extrinsic xyz.  Note that these
+ * are actually not proper Euler angles but Tait-Bryan (or Cardan) angles.
+ * However, the name "Euler" is often used for them as well and probably better
+ * known, so we'll stick with this name here.
+ */
+class EulerTransform
+{
+public:
+    //! Translational part of the transform.
+    Eigen::Vector3d translation;
+    //! Rotational part of the transform in extrinsic xyz Euler angles [radian].
+    Eigen::Vector3d euler_xyz;
+
+    //! Construct identity transformation.
+    EulerTransform();
+
+    //! Construct from an isometry transformation.
+    EulerTransform(const Eigen::Isometry3d &tf);
+};
+
 }  // namespace vicon_transformer
