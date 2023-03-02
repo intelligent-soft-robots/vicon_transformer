@@ -102,27 +102,27 @@ back using the :cpp:class`~vicon_transformer::PlaybackReceiver`.
     vicon_record <hostname or IP> output_file.dat -d <duration in seconds>
 
 
-vicon_print_data_cpp
---------------------
+vicon_print_data
+----------------
 
 Print data from either a running Vicon system or a previously recorded file:
 
 ::
 
-    vicon_print_data_cpp <host or file>
+    vicon_print_data <host or file>
 
 See ``--help`` for all options.
 
 .. important::
 
-   ``vicon_print_data_cpp`` prints the poses as reported by the Vicon system, i.e. it
+   ``vicon_print_data`` prints the poses as reported by the Vicon system, i.e. it
    does not transform with respect to some origin subject!
 
 
-vicon_print_data
-----------------
+vicon_print_data_py
+-------------------
 
-Python-version of ``vicon_print_data_cpp`` (see above).  It doesn't support playback of
+Python-version of ``vicon_print_data`` (see above).  It doesn't support playback of
 recorded files, apart from that it is mostly equivalent to the C++-version and mainly
 serves as an example on how to use the Python bindings.
 

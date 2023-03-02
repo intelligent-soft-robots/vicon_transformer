@@ -57,9 +57,9 @@ public:
 
     std::string help() const override
     {
-        return R"(Record Vicon data and save to file.
+        return R"(Print Vicon data to terminal.
 
-Usage:  vicon_print_data_cpp <vicon-host-name> [options]
+Usage:  vicon_print_data <vicon-host-name-or-file> [options]
 
 )";
     }
