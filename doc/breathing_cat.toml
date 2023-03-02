@@ -4,6 +4,6 @@ exclude_patterns = ["json.hpp"]
 [intersphinx.mapping]
 pam_documentation = "https://intelligent-soft-robots.github.io/pam_documentation"
 
-# [mainpage]
+[mainpage]
 # title = "Custom Title"
-# auto_general_docs = false
+auto_general_docs = false
