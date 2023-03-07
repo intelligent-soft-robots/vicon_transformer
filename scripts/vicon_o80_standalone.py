@@ -100,8 +100,8 @@ def main() -> int:
             time.sleep(0.01)
     except (KeyboardInterrupt, SystemExit):
         logging.info("exiting ...")
-    except Exception as e:
-        logging.exception(str(e))
+    except Exception:
+        logging.exception("Unexpected error")
 
     logging.info("Stopping o80 standalone...")
     stop_standalone(args.segment_id)
