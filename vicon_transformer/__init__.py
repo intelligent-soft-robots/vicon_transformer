@@ -10,6 +10,8 @@ generally difficult to set precisely).
 """
 from __future__ import annotations
 
+import spatial_transformation
+
 from .vicon_transformer_bindings import (
     BadResultError,
     NotConnectedError,
@@ -20,7 +22,7 @@ from .vicon_transformer_bindings import (
     ViconFrame,
     ViconReceiver as _ViconReceiver,
     ViconReceiverConfig,
-    ViconTransformer,
+    ViconTransformer as _ViconTransformer,
     to_json,
     from_json,
 )
@@ -40,6 +42,18 @@ class ViconReceiver(_ViconReceiver):
     def __exit__(self, exc_type, exc_value, exc_traceback) -> None:  # noqa[ANN001]
         """Disconnect from the vicon server."""
         self.disconnect()
+
+
+# extend ViconTransformer with a get_transform() method that returns a Python
+# Transformation
+class ViconTransformer(_ViconTransformer):
+    """Wrapper around ViconTransformer implementedin C++."""
+
+    def get_transform(self, subject_name: str) -> spatial_transformation.Transformation:
+        """Get transformation of a subject relative to the origin subject."""
+        return spatial_transformation.Transformation.from_cpp(
+            self._get_transform_cpp(subject_name)
+        )
 
 
 __all__ = (

@@ -79,7 +79,7 @@ class FramePublisher(Node):
                         tf_msg.transform.rotation.y,
                         tf_msg.transform.rotation.z,
                         tf_msg.transform.rotation.w,
-                    ) = transform.get_rotation()
+                    ) = transform.rotation.as_quat()
 
                     # Send the transformation
                     self.tf_broadcaster.sendTransform(tf_msg)

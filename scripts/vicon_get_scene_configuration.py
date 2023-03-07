@@ -13,6 +13,9 @@ import pathlib
 import sys
 import typing as t
 
+import numpy as np
+
+from spatial_transformation import Transformation
 import pam_vicon_o80.pam_vicon
 from vicon_transformer import (
     PlaybackReceiver,
@@ -20,13 +23,9 @@ from vicon_transformer import (
     ViconReceiver,
     ViconTransformer,
 )
-from vicon_transformer.vicon_transformer_bindings import Receiver
-
-# FIXME use new conversion methods
-from spatial_transformation.cpp import Tranformation
 
 if t.TYPE_CHECKING:
-    import numpy as np
+    from vicon_transformer.vicon_transformer_bindings import Receiver
 
 
 ROBOT_BASE_SUBJECT = "rll_muscle_base"
@@ -54,7 +53,7 @@ class JsonEncoder(json.JSONEncoder):
     def _(self, obj: Transformation) -> t.Any:
         return {
             "position": obj.translation,
-            "orientation": obj.get_rotation(),
+            "orientation": obj.rotation.as_quat(),
         }
 
 
@@ -65,15 +64,7 @@ def get_table_transform(transformer: ViconTransformer) -> Transformation:
     ]
     corner_positions_world = [c.translation for c in corner_poses_world]
 
-    pose = pam_vicon_o80.pam_vicon.get_table_pose(corner_positions_world)
-
-    # convert to Transformation from C++ bindings to be compatible with rest of the
-    # script.
-    tf = Transformation()
-    tf.translation = pose.translation
-    tf.set_rotation(pose.rotation.as_quat())
-
-    return tf
+    return pam_vicon_o80.pam_vicon.get_table_pose(corner_positions_world)
 
 
 def main() -> int:

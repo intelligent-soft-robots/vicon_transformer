@@ -153,4 +153,4 @@ class PamVicon:
     def get_robot_pose(self) -> Transformation:
         """Get pose of the robot base."""
         pose = self._get_subject(self.ROBOT_BASE_SUBJECT).global_pose
-        return Transformation(pose.get_rotation(), pose.translation)
+        return Transformation.from_cpp(pose)

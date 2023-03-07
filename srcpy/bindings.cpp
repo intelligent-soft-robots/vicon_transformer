@@ -141,7 +141,7 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
         .def("is_visible",
              &vt::ViconTransformer::is_visible,
              py::call_guard<py::gil_scoped_release>())
-        .def("get_transform",
+        .def("_get_transform_cpp",
              &vt::ViconTransformer::get_transform,
              py::call_guard<py::gil_scoped_release>())
         .def("get_frame",
