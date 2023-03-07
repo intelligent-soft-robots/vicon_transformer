@@ -13,11 +13,14 @@
 #include <spdlog/logger.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
-#include "transform.hpp"
+#include <spatial_transformation/transformation.hpp>
+
 #include "vicon_receiver.hpp"
 
 namespace vicon_transformer
 {
+using spatial_transformation::Transformation;
+
 /**
  * @brief Get data from a ViconReceiver and provide poses of subjects relative
  * to an "origin subject".

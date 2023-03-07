@@ -16,7 +16,7 @@
 #include <cereal/types/map.hpp>
 #include <cereal/types/string.hpp>
 
-#include "transform.hpp"
+#include <spatial_transformation/transformation.hpp>
 
 namespace vicon_transformer
 {
@@ -41,7 +41,7 @@ struct SubjectData
      *
      * This field is only set if @ref is_visible is true.
      */
-    Transformation global_pose;
+    spatial_transformation::Transformation global_pose;
 
     //! Quality measure of the pose estimation.
     double quality = 0.0;

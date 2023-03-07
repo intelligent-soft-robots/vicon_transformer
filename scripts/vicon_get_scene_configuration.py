@@ -20,7 +20,10 @@ from vicon_transformer import (
     ViconReceiver,
     ViconTransformer,
 )
-from vicon_transformer.vicon_transformer_bindings import Transformation, Receiver
+from vicon_transformer.vicon_transformer_bindings import Receiver
+
+# FIXME use new conversion methods
+from spatial_transformation.cpp import Tranformation
 
 if t.TYPE_CHECKING:
     import numpy as np

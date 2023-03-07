@@ -15,10 +15,10 @@
 #include <Eigen/Eigen>
 
 #include <cli_utils/program_options.hpp>
+#include <spatial_transformation/pointcloud.hpp>
+#include <spatial_transformation/transformation.hpp>
 
-#include <vicon_transformer/pointcloud.hpp>
-#include <vicon_transformer/thirdparty/json.hpp>
-#include <vicon_transformer/transform.hpp>
+#include <spatial_transformation/thirdparty/json.hpp>
 
 using json = nlohmann::json;
 
@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
     try
     {
         std::tie(tennicam_points, vicon_points) =
-            vicon_transformer::json_point_cloud_to_eigen(
+            spatial_transformation::json_point_cloud_to_eigen(
                 trajectory, "tennicam_position", "vicon_position");
     }
     catch (const std::invalid_argument &e)
@@ -153,12 +153,12 @@ int main(int argc, char *argv[])
     logger->debug("Transformation matrix:\n{}\n",
                   tf.matrix().format(matrix_list_fmt));
 
-    double mean_error = vicon_transformer::compute_mean_transform_error(
+    double mean_error = spatial_transformation::compute_mean_transform_error(
         tennicam_points, vicon_points, tf);
     logger->info("Mean error: {}", mean_error);
 
     // tennicam expects Euler angles in "extrinsic xyz" convention
-    vicon_transformer::EulerTransform tennicam_tf(tf);
+    spatial_transformation::EulerTransform tennicam_tf(tf);
 
     // print transform in the format used by tennicam_client's config.toml
     fmt::print("[transform]\n");

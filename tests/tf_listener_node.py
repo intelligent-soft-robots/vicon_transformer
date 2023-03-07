@@ -11,7 +11,7 @@ from tf2_ros import TransformException
 from tf2_ros.buffer import Buffer
 from tf2_ros.transform_listener import TransformListener
 
-from vicon_transformer.transform import Transformation, Rotation
+from spatial_transformation import Transformation, Rotation
 
 if typing.TYPE_CHECKING:
     from geometry_msgs.msg import TransformStamped

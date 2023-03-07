@@ -10,14 +10,16 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <spatial_transformation/transformation.hpp>
+
 #include <vicon_transformer/errors.hpp>
 #include <vicon_transformer/vicon_receiver.hpp>
 #include <vicon_transformer/vicon_transformer.hpp>
 
 #include "utils.hpp"
 
+using spatial_transformation::Transformation;
 using vicon_transformer::JsonReceiver;
-using vicon_transformer::Transformation;
 using vicon_transformer::ViconFrame;
 using vicon_transformer::ViconTransformer;
 

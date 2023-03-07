@@ -7,7 +7,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation
 
 from vicon_transformer import pam_vicon_o80, SubjectNotVisibleError, SubjectData
-from vicon_transformer.transform import Transformation
+from spatial_transformation import Transformation
 
 from vicon_transformer.pam_vicon_o80 import get_subject_names, Subjects
 
