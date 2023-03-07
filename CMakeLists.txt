@@ -24,6 +24,7 @@ find_package(mpi_cmake_modules REQUIRED)
 find_package(cli_utils REQUIRED)
 find_package(o80 REQUIRED)
 find_package(serialization_utils REQUIRED)
+find_package(spatial_transformation REQUIRED)
 
 find_package(cereal REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -41,7 +42,6 @@ ament_python_install_package(pam_vicon_o80 PACKAGE_DIR pam_vicon_o80)
 
 add_library(vicon_receiver
     src/vicon_receiver.cpp
-    src/transform.cpp
     src/types.cpp
 )
 target_include_directories(vicon_receiver PUBLIC
@@ -55,6 +55,7 @@ target_link_libraries(vicon_receiver
     spdlog::spdlog
     vicon-datastream-sdk::ViconDataStreamSDK_CPP
     serialization_utils::serialization_utils
+    spatial_transformation::transformation
 )
 
 
@@ -85,8 +86,6 @@ target_link_libraries(vicon_record
 
 add_executable(compute_tennicam_to_vicon_transform
     src/compute_tennicam_to_vicon_transform.cpp
-    src/pointcloud.cpp
-    src/transform.cpp
 )
 target_include_directories(compute_tennicam_to_vicon_transform PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -97,6 +96,8 @@ target_link_libraries(compute_tennicam_to_vicon_transform
     spdlog::spdlog
     fmt::fmt
     cli_utils::program_options
+    spatial_transformation::transformation
+    spatial_transformation::pointcloud
 )
 
 ## Python Bindings
@@ -153,35 +154,12 @@ if(BUILD_TESTING)
     # Python tests that use the C++ bindings need to be run in a different directory,
     # otherwise the local Python source will shadow the installed package and thus the
     # pybind11 modules will be missing.
-    ament_add_pytest_test(test_transform_py tests/test_transform.py
-        WORKING_DIRECTORY /tmp)
     ament_add_pytest_test(test_vicon_transformer_py tests/test_vicon_transformer.py
         WORKING_DIRECTORY /tmp)
     ament_add_pytest_test(test_o80_py tests/test_o80.py
         WORKING_DIRECTORY /tmp)
     ament_add_pytest_test(test_pam_vicon_py tests/test_pam_vicon.py
         WORKING_DIRECTORY /tmp)
-
-    # C++ tests
-    ament_add_gmock(test_transform_cpp
-        tests/test_transform.cpp
-        src/transform.cpp
-    )
-    target_include_directories(test_transform_cpp PRIVATE include)
-    target_link_libraries(test_transform_cpp
-        Eigen3::Eigen
-        fmt::fmt
-        serialization_utils::serialization_utils
-    )
-
-    ament_add_gmock(test_pointcloud
-        tests/test_pointcloud.cpp
-        src/pointcloud.cpp
-    )
-    target_include_directories(test_pointcloud PRIVATE include)
-    target_link_libraries(test_pointcloud
-        Eigen3::Eigen
-    )
 
     ament_add_gmock(test_vicon_receiver_cpp
         tests/test_vicon_receiver.cpp

@@ -8,7 +8,8 @@ schematypens="http://www.w3.org/2001/XMLSchema"?>
     <version>0.9.0</version>
     <description>uses vicon to find transforms of table and robot</description>
     <author email="dbuechler@tuebingen.mpg.de">Dieter Buechler</author>
-    <maintainer email="dbuechler@tuebingen.mpg.de">Dieter Buechler</maintainer>
+    <author email="felix.widmaier@tue.mpg.de">Felix Widmaier</author>
+    <maintainer email="felix.widmaier@tue.mpg.de">Felix Widmaier</maintainer>
     <license>BSD-3-Clause</license>
 
     <buildtool_depend>ament_cmake</buildtool_depend>
@@ -25,6 +26,7 @@ schematypens="http://www.w3.org/2001/XMLSchema"?>
     <depend>cli_utils</depend>
     <depend>o80</depend>
     <depend>serialization_utils</depend>
+    <depend>spatial_transformation</depend>
 
     <test_depend>ament_cmake_gmock</test_depend>
     <test_depend>ament_cmake_pytest</test_depend>

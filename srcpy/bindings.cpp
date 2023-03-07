@@ -15,7 +15,6 @@
 #include <serialization_utils/cereal_json.hpp>
 
 #include <vicon_transformer/errors.hpp>
-#include <vicon_transformer/transform.hpp>
 #include <vicon_transformer/types.hpp>
 #include <vicon_transformer/vicon_receiver.hpp>
 #include <vicon_transformer/vicon_transformer.hpp>
@@ -25,6 +24,9 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
     namespace py = pybind11;
     namespace vt = vicon_transformer;
 
+    // import bindings for spatial_transformation::Transformation
+    py::module::import("spatial_transformation.cpp");
+
     py::register_exception<vt::NotConnectedError>(
         m, "NotConnectedError", PyExc_RuntimeError);
     py::register_exception<vt::BadResultError>(
@@ -33,44 +35,6 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
         m, "SubjectNotVisibleError", PyExc_RuntimeError);
     py::register_exception<vt::UnknownSubjectError>(
         m, "UnknownSubjectError", PyExc_RuntimeError);
-
-    // TODO: add unit tests for bindings of Transformation
-    py::class_<vt::Transformation>(m, "Transformation")
-        .def(py::init<>(), py::call_guard<py::gil_scoped_release>())
-        .def(py::init<Eigen::Quaterniond, Eigen::Vector3d>(),
-             py::call_guard<py::gil_scoped_release>())
-        .def(py::self * py::self)
-        .def(py::self * Eigen::Vector3d())
-        .def("apply",
-             &vt::Transformation::apply,
-             py::call_guard<py::gil_scoped_release>())
-        .def("inverse",
-             &vt::Transformation::inverse,
-             py::call_guard<py::gil_scoped_release>())
-        .def("matrix",
-             &vt::Transformation::matrix,
-             py::call_guard<py::gil_scoped_release>())
-        .def_readwrite("translation", &vt::Transformation::translation)
-        // there are no proper bindings for Eigen::Quaterniond, so as a simple
-        // workaround provide a getter and setter that provide/expect the
-        // quaternion as a list [x, y, z, w].
-        .def("get_rotation",
-             [](const vt::Transformation& self)
-             {
-                 std::array<double, 4> quat = {self.rotation.x(),
-                                               self.rotation.y(),
-                                               self.rotation.z(),
-                                               self.rotation.w()};
-                 return quat;
-             })
-        .def("set_rotation",
-             [](vt::Transformation& self, const std::array<double, 4>& quat)
-             {
-                 self.rotation.x() = quat[0];
-                 self.rotation.y() = quat[1];
-                 self.rotation.z() = quat[2];
-                 self.rotation.w() = quat[3];
-             });
 
     py::class_<vt::SubjectData>(m, "SubjectData")
         .def(py::init<>())
@@ -177,7 +141,7 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
         .def("is_visible",
              &vt::ViconTransformer::is_visible,
              py::call_guard<py::gil_scoped_release>())
-        .def("get_transform",
+        .def("_get_transform_cpp",
              &vt::ViconTransformer::get_transform,
              py::call_guard<py::gil_scoped_release>())
         .def("get_frame",

@@ -210,7 +210,8 @@ ViconFrame ViconReceiver::read()
                 Eigen::Map<Eigen::Vector3d>(global_translation.Translation) /
                 1000;
 
-            subject_data.global_pose = Transformation(rotation, translation);
+            subject_data.global_pose =
+                spatial_transformation::Transformation(rotation, translation);
 
             // Get the quality of the subject (object) if supported
             auto quality = client_.GetObjectQuality(subject_name);

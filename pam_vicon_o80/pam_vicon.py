@@ -7,7 +7,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation
 
 from vicon_transformer import pam_vicon_o80, SubjectNotVisibleError, SubjectData
-from vicon_transformer.transform import Transformation
+from spatial_transformation import Transformation
 
 from vicon_transformer.pam_vicon_o80 import get_subject_names, Subjects
 
@@ -153,4 +153,4 @@ class PamVicon:
     def get_robot_pose(self) -> Transformation:
         """Get pose of the robot base."""
         pose = self._get_subject(self.ROBOT_BASE_SUBJECT).global_pose
-        return Transformation(pose.get_rotation(), pose.translation)
+        return Transformation.from_cpp(pose)

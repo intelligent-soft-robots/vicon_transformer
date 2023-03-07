@@ -4,7 +4,6 @@ import pathlib
 
 import numpy as np
 import pytest
-from scipy.spatial.transform import Rotation
 
 from vicon_transformer import ViconTransformer, SubjectNotVisibleError
 from vicon_transformer.vicon_transformer_bindings import JsonReceiver
@@ -41,9 +40,7 @@ def test_origin_init(test_data) -> None:
         t1 = vt1.get_transform(name)
         t2 = vt2.get_transform(name)
         delta_tr = t1.translation - t2.translation
-        rot1 = Rotation.from_quat(t1.get_rotation())
-        rot2 = Rotation.from_quat(t2.get_rotation())
-        delta_rot = rot1.inv() * rot2
+        delta_rot = t1.rotation.inv() * t2.rotation
 
         # translation error
         assert np.linalg.norm(delta_tr) < 0.0025, name
@@ -64,7 +61,7 @@ def test_basic_transforms_ping_at_origin(test_data) -> None:
     vicon.update()
 
     np.testing.assert_array_almost_equal(
-        vicon.get_transform("rll_muscle_base").matrix(),
+        vicon.get_transform("rll_muscle_base").as_matrix(),
         [
             [
                 0.8663438846138151,
@@ -89,7 +86,7 @@ def test_basic_transforms_ping_at_origin(test_data) -> None:
     )
 
     np.testing.assert_array_almost_equal(
-        vicon.get_transform("TT Platte_Eckteil 1").matrix(),
+        vicon.get_transform("TT Platte_Eckteil 1").as_matrix(),
         [
             [
                 0.9447796559203805,
@@ -114,7 +111,7 @@ def test_basic_transforms_ping_at_origin(test_data) -> None:
     )
 
     np.testing.assert_array_almost_equal(
-        vicon.get_transform("TT Platte_Eckteil 2").matrix(),
+        vicon.get_transform("TT Platte_Eckteil 2").as_matrix(),
         [
             [
                 0.37591100914174547,
@@ -139,7 +136,7 @@ def test_basic_transforms_ping_at_origin(test_data) -> None:
     )
 
     np.testing.assert_array_almost_equal(
-        vicon.get_transform("TT Platte_Eckteil 3").matrix(),
+        vicon.get_transform("TT Platte_Eckteil 3").as_matrix(),
         [
             [
                 -0.9376639450735708,
@@ -164,7 +161,7 @@ def test_basic_transforms_ping_at_origin(test_data) -> None:
     )
 
     np.testing.assert_array_almost_equal(
-        vicon.get_transform("TT Platte_Eckteil 4").matrix(),
+        vicon.get_transform("TT Platte_Eckteil 4").as_matrix(),
         [
             [
                 -0.372867823047438,
@@ -201,7 +198,7 @@ def test_basic_transforms_ping_simple_translation(test_data) -> None:
     vicon.update()
 
     np.testing.assert_array_almost_equal(
-        vicon.get_transform("rll_muscle_base").matrix(),
+        vicon.get_transform("rll_muscle_base").as_matrix(),
         [
             [
                 0.8663438846138151,
@@ -226,7 +223,7 @@ def test_basic_transforms_ping_simple_translation(test_data) -> None:
     )
 
     np.testing.assert_array_almost_equal(
-        vicon.get_transform("TT Platte_Eckteil 1").matrix(),
+        vicon.get_transform("TT Platte_Eckteil 1").as_matrix(),
         [
             [
                 0.9447796559203805,
@@ -251,7 +248,7 @@ def test_basic_transforms_ping_simple_translation(test_data) -> None:
     )
 
     np.testing.assert_array_almost_equal(
-        vicon.get_transform("TT Platte_Eckteil 2").matrix(),
+        vicon.get_transform("TT Platte_Eckteil 2").as_matrix(),
         [
             [
                 0.37591100914174547,
@@ -276,7 +273,7 @@ def test_basic_transforms_ping_simple_translation(test_data) -> None:
     )
 
     np.testing.assert_array_almost_equal(
-        vicon.get_transform("TT Platte_Eckteil 3").matrix(),
+        vicon.get_transform("TT Platte_Eckteil 3").as_matrix(),
         [
             [
                 -0.9376639450735708,
@@ -301,7 +298,7 @@ def test_basic_transforms_ping_simple_translation(test_data) -> None:
     )
 
     np.testing.assert_array_almost_equal(
-        vicon.get_transform("TT Platte_Eckteil 4").matrix(),
+        vicon.get_transform("TT Platte_Eckteil 4").as_matrix(),
         [
             [
                 -0.372867823047438,
