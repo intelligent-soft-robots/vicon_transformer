@@ -107,54 +107,37 @@ int main(int argc, char *argv[])
                                        : spdlog::level::info);
     }
 
-    std::ifstream in_stream(args.input_file);
-    if (in_stream.fail())
-    {
-        logger->critical("Could not open file {}.", args.input_file);
-        return 1;
-    }
-
-    json trajectory;
+    // load positions from trajectory into Eigen matrices, one column per point
+    Eigen::Isometry3d tf;
+    double mean_error;
     try
     {
-        in_stream >> trajectory;
+        // load positions from trajectory into Eigen matrices, one column per
+        // point
+        const auto &[tennicam_points, vicon_points] =
+            spatial_transformation::read_point_clouds_from_json_file(
+                args.input_file, "tennicam_position", "vicon_position");
+
+        logger->info("Loaded trajectory with {} steps.",
+                     tennicam_points.cols());
+        logger->debug("tennicam points:\n{}\n",
+                      tennicam_points.transpose().format(matrix_list_fmt));
+        logger->debug("vicon points:\n{}\n",
+                      vicon_points.transpose().format(matrix_list_fmt));
+
+        // compute transformation
+        std::tie(tf, mean_error) =
+            spatial_transformation::compute_transformation_between_point_clouds(
+                tennicam_points, vicon_points);
     }
     catch (const std::exception &e)
     {
-        logger->critical("Failed to load configuration from '{}'. Reason: {}",
-                         args.input_file,
-                         e.what());
+        logger->critical(e.what());
         return 1;
     }
 
-    // load positions from trajectory into Eigen matrices, one column per point
-    Eigen::Matrix3Xd tennicam_points, vicon_points;
-    try
-    {
-        std::tie(tennicam_points, vicon_points) =
-            spatial_transformation::json_point_cloud_to_eigen(
-                trajectory, "tennicam_position", "vicon_position");
-    }
-    catch (const std::invalid_argument &e)
-    {
-        logger->critical(e.what());
-        return 2;
-    }
-
-    logger->info("Loaded trajectory with {} steps.", tennicam_points.cols());
-    logger->debug("tennicam points:\n{}\n",
-                  tennicam_points.transpose().format(matrix_list_fmt));
-    logger->debug("vicon points:\n{}\n",
-                  vicon_points.transpose().format(matrix_list_fmt));
-
-    // compute transformation using Umeyama algorithm
-    Eigen::Isometry3d tf;
-    tf.matrix() = Eigen::umeyama(tennicam_points, vicon_points, false);
     logger->debug("Transformation matrix:\n{}\n",
                   tf.matrix().format(matrix_list_fmt));
-
-    double mean_error = spatial_transformation::compute_mean_transform_error(
-        tennicam_points, vicon_points, tf);
     logger->info("Mean error: {}", mean_error);
 
     // tennicam expects Euler angles in "extrinsic xyz" convention
