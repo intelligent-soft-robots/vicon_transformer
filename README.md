@@ -15,15 +15,10 @@ The implementation is kept generic, such that it should work for different appli
 The package also contains templated
 [o80](https://github.com/intelligent-soft-robots/o80) driver and standalone classes,
 which can be specialised for specific applications by providing the number of subjects
-and a name-to-index mapping function.  See pam_vicon_o80 for an example.
+and a name-to-index mapping function.  See
+[pam_vicon](https://github.com/intelligent-soft-robots/pam_vicon) for an
+example.
 
 
 For more information see the
 **[documentation](https://intelligent-soft-robots.github.io/vicon_transformer)**.
-
-
-# pam_vicon_o80
-
-NOTE: This part will be moved to its own package soon.
-
-o80 driver and standalone implementations for the ISR-PAM Vicon system.

@@ -36,8 +36,6 @@ find_package(vicon-datastream-sdk REQUIRED)
 ament_export_dependencies(fmt spdlog vicon-datastream-sdk)
 
 ament_python_install_package(${PROJECT_NAME} PACKAGE_DIR ${PROJECT_NAME})
-# TODO move to separate package
-ament_python_install_package(pam_vicon_o80 PACKAGE_DIR pam_vicon_o80)
 
 
 add_library(vicon_receiver
@@ -84,21 +82,6 @@ target_link_libraries(vicon_record
     cli_utils::program_options
 )
 
-add_executable(compute_tennicam_to_vicon_transform
-    src/compute_tennicam_to_vicon_transform.cpp
-)
-target_include_directories(compute_tennicam_to_vicon_transform PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
-)
-target_link_libraries(compute_tennicam_to_vicon_transform
-    Eigen3::Eigen
-    spdlog::spdlog
-    fmt::fmt
-    cli_utils::program_options
-    spatial_transformation::transformation
-    spatial_transformation::pointcloud
-)
 
 ## Python Bindings
 add_pybind11_module(${PROJECT_NAME}_bindings srcpy/bindings.cpp
@@ -107,14 +90,6 @@ add_pybind11_module(${PROJECT_NAME}_bindings srcpy/bindings.cpp
         vicon_transformer
         serialization_utils::serialization_utils
         o80::o80
-)
-
-add_pybind11_module(pam_vicon_o80 srcpy/pam_vicon_o80.cpp
-    LINK_LIBRARIES 
-        vicon_receiver
-        vicon_transformer
-        o80::o80
-        serialization_utils::serialization_utils
 )
 
 
@@ -127,7 +102,6 @@ install(
 
         vicon_print_data
         vicon_record
-        compute_tennicam_to_vicon_transform
     EXPORT export_${PROJECT_NAME}
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
@@ -136,9 +110,6 @@ install(
 )
 
 install_scripts(
-    scripts/record_tennicam_vicon_trajectory.py
-    scripts/vicon_o80_print_data.py
-    scripts/vicon_o80_standalone.py
     scripts/vicon_print_data_py.py
 
     DESTINATION bin
@@ -155,10 +126,6 @@ if(BUILD_TESTING)
     # otherwise the local Python source will shadow the installed package and thus the
     # pybind11 modules will be missing.
     ament_add_pytest_test(test_vicon_transformer_py tests/test_vicon_transformer.py
-        WORKING_DIRECTORY /tmp)
-    ament_add_pytest_test(test_o80_py tests/test_o80.py
-        WORKING_DIRECTORY /tmp)
-    ament_add_pytest_test(test_pam_vicon_py tests/test_pam_vicon.py
         WORKING_DIRECTORY /tmp)
 
     ament_add_gmock(test_vicon_receiver_cpp

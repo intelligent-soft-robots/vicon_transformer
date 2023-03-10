@@ -1,6 +1,3 @@
-[doxygen]
-exclude_patterns = ["json.hpp"]
-
 [intersphinx.mapping]
 pam_documentation = "https://intelligent-soft-robots.github.io/pam_documentation"
 
