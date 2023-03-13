@@ -1,8 +1,6 @@
-[doxygen]
-exclude_patterns = ["json.hpp"]
-
 [intersphinx.mapping]
 pam_documentation = "https://intelligent-soft-robots.github.io/pam_documentation"
+pam_vicon = "https://intelligent-soft-robots.github.io/pam_vicon"
 
 [mainpage]
 # title = "Custom Title"

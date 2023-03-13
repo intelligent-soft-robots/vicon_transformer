@@ -9,6 +9,9 @@ Below are examples in both Python and C++.  Note that they only use the low leve
 receiver class which gives poses as provided by Vicon and does not transform them to a
 specific reference frame.
 
+
+.. _example_receiver_python:
+
 Python
 ======
 

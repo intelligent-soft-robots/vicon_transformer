@@ -50,7 +50,6 @@ module = [
     "tf2_ros.*",
     "vicon_dssdk",
     "vicon_transformer.vicon_transformer_bindings",
-    "vicon_transformer.pam_vicon_o80",
     "zmq",
 ]
 ignore_missing_imports = true
