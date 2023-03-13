@@ -8,7 +8,7 @@ Further in contains templated
 classes, which can be specialised for specific applications.
 
 
-Documentation: https://intelligent-soft-robots.github.io/pam_vicon
+Documentation: https://intelligent-soft-robots.github.io/vicon_transformer
 
 ---
 
