@@ -75,27 +75,47 @@ Basic example in Python:
 
 
 
+.. _overview_o80:
+
 o80 Driver/Standalone
 =====================
 
 This package provides templated driver and standalone classes to integrate
-:cpp:class:`~vicon_transformer::ViconTransformer` through o80_.  Since o80 requires
-observation data structures to be of fixed size, they need to be templated with the
-number of subjects and a function that maps subject name to an index.  For more details
-see the API documentation:
+:cpp:class:`~vicon_transformer::ViconTransformer` through o80_:
 
 - :cpp:class:`~vicon_transformer::o80Driver`
 - :cpp:class:`~vicon_transformer::o80Standalone`
+
+Since o80 requires observation data structures to be of fixed size, the dynamic
+:cpp:class:`~vicon_transformer::ViconFrame` class can unfortunately not used as
+observation type here.  Instead,
+:cpp:class:`~vicon_transformer::FixedSizeViconFrame` is used.  This has two
+consequences:
+
+1. The number of subjects has to be known at compile time.
+2. Subject names are not included in the data structure.  Instead, their poses
+   are given in an array in an order that has to be specified at compile time.
+
+This is done through the template arguments of
+:cpp:class:`~vicon_transformer::o80Driver` (see there for more information).
+
+For an example, how this is used in practise, see the implementation in
+:ref:`pam_vicon <pam_vicon:configure_subjects_o80>`.
+
 
 
 Executables and Scripts
 =======================
 
+In all cases, you can run the executable with ``--help`` to get a complete list
+of options.
+
+
 vicon_record
 ------------
 
-Record data from a running Vicon system and safe to a file.  The file can then be played
-back using the :cpp:class`~vicon_transformer::PlaybackReceiver`.
+Record data from a running Vicon system and safe to a file.  The file can then
+be played back using the :cpp:class:`~vicon_transformer::PlaybackReceiver`.
 
 ::
 
@@ -111,20 +131,20 @@ Print data from either a running Vicon system or a previously recorded file:
 
     vicon_print_data <host or file>
 
-See ``--help`` for all options.
 
 .. important::
 
-   ``vicon_print_data`` prints the poses as reported by the Vicon system, i.e. it
-   does not transform with respect to some origin subject!
+   ``vicon_print_data`` prints the poses as reported by the Vicon system, i.e.
+   it does not transform with respect to some origin subject!
 
 
 vicon_print_data_py
 -------------------
 
-Python-version of ``vicon_print_data`` (see above).  It doesn't support playback of
-recorded files, apart from that it is mostly equivalent to the C++-version and mainly
-serves as an example on how to use the Python bindings.
+Python-version of ``vicon_print_data`` (see above).  It doesn't support playback
+of recorded files, apart from that it is mostly equivalent to the C++-version
+and mainly serves as an :ref:`example <example_receiver_python>` on how to use
+the Python bindings.
 
 
 .. _o80: https://github.com/intelligent-soft-robots/o80

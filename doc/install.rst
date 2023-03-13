@@ -14,6 +14,9 @@ We also provide an Apptainer_ image ("pam_base") which contains all required
 dependencies, so you don't need to install everything on your computer.
 See pam_singularity_.
 
+Our internal dependencies are best provided by setting up a workspace using
+treep_ (see below).
+
 
 Build
 =====
@@ -46,8 +49,6 @@ Build with Apptainer:
 If you don't want to use Apptainer, simply call ``colcon build`` directly.  In this case,
 you need to install all dependencies locally (see
 :doc:`pam_documentation:A1_overview_and_installation`).
-
-.. (see [PAM documentation](https://intelligent-soft-robots.github.io/pam_documentation/A1_overview_and_installation.html#dependencies-and-configuration-folder)).
 
 
 .. _Apptainer: https://apptainer.org
