@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 """ROS Node that publishes TF transforms for Vicon objects."""
+
 import contextlib
 
 import rclpy

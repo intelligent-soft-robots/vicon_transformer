@@ -8,6 +8,7 @@ clearly defined origin of the scene, that is independent of the actual origin us
 Vicon (which otherwise would need to be redefined after every re-calibration and is
 generally difficult to set precisely).
 """
+
 from __future__ import annotations
 
 import spatial_transformation
