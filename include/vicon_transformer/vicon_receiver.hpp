@@ -52,7 +52,7 @@ struct ViconReceiverConfig
     std::vector<std::string> filtered_subjects;
 
     template <class Archive>
-    void serialize(Archive& archive)
+    void serialize(Archive &archive)
     {
         archive(CEREAL_NVP(enable_lightweight),
                 CEREAL_NVP(buffer_size),
@@ -93,8 +93,8 @@ public:
      * @param logger A logger instance used for logging output.  If not set, a
      *      logger with name "ViconReceiver" used.
      */
-    ViconReceiver(const std::string& host_name,
-                  const ViconReceiverConfig& config,
+    ViconReceiver(const std::string &host_name,
+                  const ViconReceiverConfig &config,
                   std::shared_ptr<spdlog::logger> logger = nullptr);
 
     ~ViconReceiver();
@@ -137,7 +137,7 @@ private:
      *
      * @param subjects List of subject names.
      */
-    void filter_subjects(const std::vector<std::string>& subjects);
+    void filter_subjects(const std::vector<std::string> &subjects);
 };
 
 /**
@@ -147,7 +147,7 @@ private:
 class JsonReceiver : public Receiver
 {
 public:
-    JsonReceiver(const std::filesystem::path& filename);
+    JsonReceiver(const std::filesystem::path &filename);
 
     //! Return the frame that was loaded from the file.
     ViconFrame read() override;
@@ -169,7 +169,7 @@ public:
      * @param logger A logger instance used for logging output.  If not set, a
      *      logger with name "ViconReceiver" used.
      */
-    PlaybackReceiver(const std::filesystem::path& filename,
+    PlaybackReceiver(const std::filesystem::path &filename,
                      std::shared_ptr<spdlog::logger> logger = nullptr);
 
     /**

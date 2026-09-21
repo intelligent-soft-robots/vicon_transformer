@@ -51,7 +51,7 @@ class None
  * @tparam map_name_to_index Function that maps a subject name to an index in
  *      the subject array.  The indices must be less than ``NUM_SUBJECTS - 1``.
  */
-template <size_t NUM_SUBJECTS, size_t (*map_name_to_index)(const std::string&)>
+template <size_t NUM_SUBJECTS, size_t (*map_name_to_index)(const std::string &)>
 class o80Driver : public o80::Driver<None, FixedSizeViconFrame<NUM_SUBJECTS>>
 {
 public:
@@ -63,7 +63,7 @@ public:
      * @param logger A logger instance used for logging output.
      */
     o80Driver(std::shared_ptr<vicon_transformer::Receiver> receiver,
-              const std::string& origin_subject_name,
+              const std::string &origin_subject_name,
               std::shared_ptr<spdlog::logger> logger = nullptr)
         : vicon_transformer_(receiver, origin_subject_name, logger)
     {
@@ -92,7 +92,7 @@ public:
         // do nothing
     }
 
-    void set(const None&) override
+    void set(const None &) override
     {
         // do nothing
     }
@@ -113,14 +113,14 @@ public:
         fixed_frame.latency = frame.latency;
         fixed_frame.time_stamp = frame.time_stamp;
 
-        for (auto& [name, data] : frame.subjects)
+        for (auto &[name, data] : frame.subjects)
         {
             size_t i;
             try
             {
                 i = map_name_to_index(name);
             }
-            catch (const UnknownSubjectError&)
+            catch (const UnknownSubjectError &)
             {
                 // Ignore unexpected subjects but print a warning the first time
                 // they occur.
