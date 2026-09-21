@@ -47,7 +47,7 @@ struct SubjectData
     double quality = 0.0;
 
     template <class Archive>
-    void serialize(Archive& archive)
+    void serialize(Archive &archive)
     {
         archive(CEREAL_NVP(is_visible),
                 CEREAL_NVP(global_pose),
@@ -65,7 +65,7 @@ struct _SubjectData_v3
     double quality;
 
     template <class Archive>
-    void serialize(Archive& archive)
+    void serialize(Archive &archive)
     {
         archive(CEREAL_NVP(is_visible),
                 CEREAL_NVP(global_translation),
@@ -97,10 +97,10 @@ struct ViconFrame
      */
     std::map<std::string, SubjectData> subjects;
 
-    friend std::ostream& operator<<(std::ostream& os, const ViconFrame& vf);
+    friend std::ostream &operator<<(std::ostream &os, const ViconFrame &vf);
 
     template <class Archive>
-    void serialize(Archive& archive)
+    void serialize(Archive &archive)
     {
         constexpr int LATEST_FORMAT = 4;
 
@@ -122,7 +122,7 @@ struct ViconFrame
                     CEREAL_NVP(subjects_v3));
 
             subjects.clear();
-            for (auto const& [key, val] : subjects_v3)
+            for (auto const &[key, val] : subjects_v3)
             {
                 SubjectData sd;
                 sd.is_visible = val.is_visible;
@@ -198,11 +198,11 @@ struct FixedSizeViconFrame
     std::array<SubjectData, NUM_SUBJECTS> subjects;
 
     template <size_t N>
-    friend std::ostream& operator<<(std::ostream& os,
-                                    const FixedSizeViconFrame<N>& vf);
+    friend std::ostream &operator<<(std::ostream &os,
+                                    const FixedSizeViconFrame<N> &vf);
 
     template <class Archive>
-    void serialize(Archive& archive)
+    void serialize(Archive &archive)
     {
         int format_version = 4;
         archive(CEREAL_NVP(format_version));
@@ -220,7 +220,7 @@ struct FixedSizeViconFrame
 };
 
 template <size_t N>
-std::ostream& operator<<(std::ostream& os, const FixedSizeViconFrame<N>& vf)
+std::ostream &operator<<(std::ostream &os, const FixedSizeViconFrame<N> &vf)
 {
     fmt::print(os, "Frame Number: {}\n", vf.frame_number);
     fmt::print(os, "Frame Rate: {}\n", vf.frame_rate);
@@ -228,13 +228,13 @@ std::ostream& operator<<(std::ostream& os, const FixedSizeViconFrame<N>& vf)
     fmt::print(os, "Timestamp: {}\n", vf.time_stamp);
 
     fmt::print(os, "Subjects ({}):\n", vf.subjects.size());
-    for (auto const& data : vf.subjects)
+    for (auto const &data : vf.subjects)
     {
         fmt::print(os, "    ---\n");
         fmt::print(os, "    Visible: {}\n", data.is_visible);
         fmt::print(os,
                    "    Translation: {}\n",
-                   data.global_pose.translation.transpose());
+                   fmt::streamed(data.global_pose.translation.transpose()));
         fmt::print(os,
                    "    Rotation: ({}, {}, {}, {})\n",
                    data.global_pose.rotation.x(),

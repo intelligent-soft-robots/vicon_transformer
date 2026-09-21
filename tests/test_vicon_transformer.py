@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 """Test Python bindings of ViconTransformer"""
+
 import pathlib
 
 import numpy as np
@@ -7,7 +8,6 @@ import pytest
 
 from vicon_transformer import ViconTransformer, SubjectNotVisibleError
 from vicon_transformer.vicon_transformer_bindings import JsonReceiver
-
 
 ORIGIN_SUBJECT = "rll_ping_base"
 

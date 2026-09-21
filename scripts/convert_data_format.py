@@ -6,6 +6,7 @@ The structure in which the Vicon data is provided changed in the past.  This scr
 converts files recorded with an older format to the newest one, so they can be used with
 the latest version of the software.
 """
+
 import argparse
 import json
 import logging

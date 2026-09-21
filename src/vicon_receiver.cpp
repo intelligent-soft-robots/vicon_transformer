@@ -25,8 +25,8 @@ using Result = ViconDataStreamSDK::CPP::Result::Enum;
 
 namespace vicon_transformer
 {
-ViconReceiver::ViconReceiver(const std::string& host_name,
-                             const ViconReceiverConfig& config,
+ViconReceiver::ViconReceiver(const std::string &host_name,
+                             const ViconReceiverConfig &config,
                              std::shared_ptr<spdlog::logger> logger)
     : host_name_(host_name), config_(config)
 {
@@ -201,7 +201,7 @@ ViconFrame ViconReceiver::read()
         {
             // NOTE: Vicon provides quaternion in (x, y, z, w) format but Eigen
             // expects (w, x, y, z).
-            const auto& [qx, qy, qz, qw] = global_rotation.Rotation;
+            const auto &[qx, qy, qz, qw] = global_rotation.Rotation;
             Eigen::Quaterniond rotation(qw, qx, qy, qz);
 
             // NOTE: Vicon provides translation in millimetres, so needs to be
@@ -239,7 +239,7 @@ void ViconReceiver::print_latency_info() const
     fmt::print("\n");
 }
 
-void ViconReceiver::filter_subjects(const std::vector<std::string>& subjects)
+void ViconReceiver::filter_subjects(const std::vector<std::string> &subjects)
 {
     // There needs to be a previously loaded frame in order to add subjects
     // to the filter.  Thus, check if there already is one and try to get
@@ -257,7 +257,7 @@ void ViconReceiver::filter_subjects(const std::vector<std::string>& subjects)
             throw BadResultError(result);
     }
 
-    for (const std::string& subject_name : subjects)
+    for (const std::string &subject_name : subjects)
     {
         log_->info("Add {} to subject filter", subject_name);
         Result result = client_.AddToSubjectFilter(subject_name).Result;
@@ -284,13 +284,13 @@ void ViconReceiver::client_get_frame()
     }
 }
 
-JsonReceiver::JsonReceiver(const std::filesystem::path& filename)
+JsonReceiver::JsonReceiver(const std::filesystem::path &filename)
 {
     std::ifstream file(filename);
     if (!file.is_open())
     {
         throw std::runtime_error(
-            fmt::format("Failed to open file {}", filename));
+            fmt::format("Failed to open file {}", filename.string()));
     }
     frame_ = serialization_utils::from_json_stream<ViconFrame>(file);
 }
@@ -300,7 +300,7 @@ ViconFrame JsonReceiver::read()
     return frame_;
 }
 
-PlaybackReceiver::PlaybackReceiver(const std::filesystem::path& filename,
+PlaybackReceiver::PlaybackReceiver(const std::filesystem::path &filename,
                                    std::shared_ptr<spdlog::logger> logger)
 {
     if (logger)
@@ -316,13 +316,13 @@ PlaybackReceiver::PlaybackReceiver(const std::filesystem::path& filename,
         }
     }
 
-    log_->info("Load Vicon data from file {}", filename);
+    log_->info("Load Vicon data from file {}", filename.string());
 
     std::ifstream file(filename);
     if (!file.is_open())
     {
         throw std::runtime_error(
-            fmt::format("Failed to open file {}", filename));
+            fmt::format("Failed to open file {}", filename.string()));
     }
 
     {

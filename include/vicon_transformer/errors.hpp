@@ -48,7 +48,7 @@ public:
 class UnknownSubjectError : public std::runtime_error
 {
 public:
-    UnknownSubjectError(const std::string& subject_name)
+    UnknownSubjectError(const std::string &subject_name)
         : std::runtime_error(fmt::format("{}", subject_name))
     {
     }
@@ -62,7 +62,7 @@ public:
 class SubjectNotVisibleError : public std::runtime_error
 {
 public:
-    SubjectNotVisibleError(const std::string& subject_name)
+    SubjectNotVisibleError(const std::string &subject_name)
         : std::runtime_error(fmt::format("{}", subject_name))
     {
     }

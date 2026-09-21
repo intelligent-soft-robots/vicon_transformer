@@ -15,8 +15,8 @@ struct fmt::formatter<ViconDataStreamSDK::CPP::Output_GetVersion>
     : formatter<string_view>
 {
     template <typename FormatContext>
-    auto format(const ViconDataStreamSDK::CPP::Output_GetVersion& version,
-                FormatContext& ctx)
+    auto format(const ViconDataStreamSDK::CPP::Output_GetVersion &version,
+                FormatContext &ctx)
     {
         string_view str = fmt::format("{}.{}.{}.{}",
                                       version.Major,
@@ -32,8 +32,8 @@ struct fmt::formatter<ViconDataStreamSDK::CPP::Direction::Enum>
     : formatter<string_view>
 {
     template <typename FormatContext>
-    auto format(const ViconDataStreamSDK::CPP::Direction::Enum& dir,
-                FormatContext& ctx)
+    auto format(const ViconDataStreamSDK::CPP::Direction::Enum &dir,
+                FormatContext &ctx)
     {
         using Direction = ViconDataStreamSDK::CPP::Direction::Enum;
 
@@ -72,8 +72,8 @@ struct fmt::formatter<ViconDataStreamSDK::CPP::Result::Enum>
     : formatter<string_view>
 {
     template <typename FormatContext>
-    auto format(const ViconDataStreamSDK::CPP::Result::Enum& result,
-                FormatContext& ctx)
+    auto format(const ViconDataStreamSDK::CPP::Result::Enum &result,
+                FormatContext &ctx)
     {
         using Result = ViconDataStreamSDK::CPP::Result::Enum;
 

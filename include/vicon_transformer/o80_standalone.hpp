@@ -45,20 +45,20 @@ public:
                           typename Driver::DRIVER_OUT>::Standalone;
 
     o80::States<STANDALONE_N_ACTUATORS, o80::VoidState> convert(
-        const typename Driver::DRIVER_OUT&) override
+        const typename Driver::DRIVER_OUT &) override
     {
         return o80::States<STANDALONE_N_ACTUATORS, o80::VoidState>();
     }
 
     None convert(
-        const o80::States<STANDALONE_N_ACTUATORS, o80::VoidState>&) override
+        const o80::States<STANDALONE_N_ACTUATORS, o80::VoidState> &) override
     {
         return None();
     }
 
     void enrich_extended_state(
-        typename Driver::DRIVER_OUT& extended_state,
-        const typename Driver::DRIVER_OUT& observation) override
+        typename Driver::DRIVER_OUT &extended_state,
+        const typename Driver::DRIVER_OUT &observation) override
     {
         extended_state = observation;
     }

@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-            fmt::print("{}\n\n", frame);
+            fmt::print("{}\n\n", fmt::streamed(frame));
         }
     }
 

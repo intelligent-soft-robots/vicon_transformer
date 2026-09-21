@@ -53,7 +53,7 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
         .def_readwrite("subjects", &vt::ViconFrame::subjects)
         .def(
             "__str__",
-            [](const vt::ViconFrame& vf)
+            [](const vt::ViconFrame &vf)
             {
                 std::stringstream stream;
                 stream << vf;
@@ -104,7 +104,7 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
     py::class_<vt::JsonReceiver,
                std::shared_ptr<vt::JsonReceiver>,
                vt::Receiver>(m, "JsonReceiver")
-        .def(py::init<const std::filesystem::path&>(),
+        .def(py::init<const std::filesystem::path &>(),
              py::arg("filename"),
              py::call_guard<py::gil_scoped_release>())
         .def("read",
@@ -113,7 +113,7 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
     py::class_<vt::PlaybackReceiver,
                std::shared_ptr<vt::PlaybackReceiver>,
                vt::Receiver>(m, "PlaybackReceiver")
-        .def(py::init<const std::filesystem::path&>(),
+        .def(py::init<const std::filesystem::path &>(),
              py::arg("filename"),
              py::call_guard<py::gil_scoped_release>())
         .def("read",
@@ -121,7 +121,7 @@ PYBIND11_MODULE(vicon_transformer_bindings, m)
              py::call_guard<py::gil_scoped_release>());
 
     py::class_<vt::ViconTransformer>(m, "ViconTransformer")
-        .def(py::init<std::shared_ptr<vt::Receiver>, const std::string&>(),
+        .def(py::init<std::shared_ptr<vt::Receiver>, const std::string &>(),
              py::call_guard<py::gil_scoped_release>())
         .def("update",
              &vt::ViconTransformer::update,
